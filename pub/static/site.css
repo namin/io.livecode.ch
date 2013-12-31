@@ -1,0 +1,11 @@
+body {
+  margin: 4em;
+  font-family: 'Georgia', serif;
+}
+.hidden {
+  display: none;
+}
+.disable {
+  color: grey!important;
+  cursor: not-allowed!important;
+}

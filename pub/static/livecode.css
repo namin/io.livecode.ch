@@ -1,0 +1,23 @@
+.icon {
+  font-size: 2em;
+}
+.icon:hover {
+  cursor: pointer;
+  color: green;
+}
+.running {
+  color: red!important;
+}
+.output {
+  vertical-align: top;
+  display: inline-block;
+  font-size: 1em;
+}
+.viewcode {
+  width: 100%;
+  border: 0;
+}
+/* work-around android zoom focus */
+textarea:focus { font-size: 16px!important}
+.pseudocode { text-align: center; }
+.sol { display: none; }
