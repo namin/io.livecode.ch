@@ -67,24 +67,33 @@ RUN  cd /code;\
 RUN apt-get install -y openjdk-6-jdk
 
 RUN useradd runner -m -d /home/runner -s /bin/bash
-RUN adduser runner sudo
+
+RUN apt-get install -y sudo
 
 ## From now on, everything is executed as user runner ##
-
 ENV HOME /home/runner
 RUN env
-RUN su -l runner;\
-    mkdir ~/bin
+
+RUN sudo -u runner mkdir /home/runner/bin
 
 ### Scala / SBT ###
-RUN su -l runner;\
-    cd ~/bin;\
-    wget -nv http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.1/sbt-launch.jar;\
-    echo 'SBT_OPTS="-Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256M"; java $SBT_OPTS -jar `dirname $0`/sbt-launch.jar "$@"' >sbt;\
-    chmod 755 sbt
+RUN cd /home/runner/bin;\
+    sudo -u runner wget -nv http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.1/sbt-launch.jar;\
+    sudo -u runner echo 'SBT_OPTS="-Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256M"; java $SBT_OPTS -jar `dirname $0`/sbt-launch.jar "$@"' | sudo -u runner tee sbt;\
+    sudo -u runner chmod 755 sbt;\
+    cd /tmp;\
+    sudo -u runner /home/runner/bin/sbt
 
 ### Clojure / Leiningen ###
-RUN su -l runner;\
-    cd ~/bin;\
-    wget -nv https://raw.github.com/technomancy/leiningen/stable/bin/lein;\
-    chmod 755 lein
+RUN cd /home/runner/bin;\
+    sudo -u runner wget -nv https://raw.github.com/technomancy/leiningen/stable/bin/lein;\
+    chmod 755 lein;\
+    cd /tmp;\
+    sudo -u runner /home/runner/bin/lein
+
+## Install io.livecode.ch scripts ##
+ADD dkr/livecode-install /tmp/livecode-install
+ADD dkr/livecode-run /tmp/livecode-run
+RUN cd /home/runner/bin;\
+    sudo -u runner cp /tmp/livecode-install .;\
+    sudo -u runner cp /tmp/livecode-run .

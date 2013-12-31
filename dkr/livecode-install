@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+
+cd $HOME
+git clone $3 code
+cd code
+timeout $1 $2

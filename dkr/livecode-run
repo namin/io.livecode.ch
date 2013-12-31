@@ -1,0 +1,13 @@
+#!/bin/bash                                                                                                                                                            
+set -e
+ 
+cd $HOME
+mkdir -p files
+
+wget -nv -O files/pre.txt $3
+wget -nv -O files/main.txt $4
+wget -nv -O files/post.txt $5
+
+cd code
+
+timeout $1 $2 $HOME/files/pre.txt $HOME/files/main.txt $HOME/files/post.txt
