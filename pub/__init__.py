@@ -95,7 +95,7 @@ def fetch_defaults(user, repo):
         raise UserError(user, repo, ctx='while parsing <code>defaults.json</code>', err=str(e))
     o = dkr_check_img(github_dkr_img(user, repo), github_git_url(user, repo), refresh=request.args.get('refresh', False))
     if o['status']!=0:
-        raise UserError(user, repo, ctx='while installing', err=o.out)
+        raise UserError(user, repo, ctx='while installing', err=o['out'])
     return j_defaults
 
 @app.route("/repl/<user>/<repo>")
