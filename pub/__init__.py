@@ -110,6 +110,10 @@ def snippet_cache(txt):
     redis.hset('snippet', key, txt)
     return 'http://%s/api/snippet/%s' % (app.config['SERVER_NAME'], key)
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('error_404.html', status=e), 404
