@@ -15,7 +15,8 @@ code snippets that can be edited and run on the web.
 <p>The backend is powered by <a href="http://docker.io">docker.io</a>
 and is language-agnostic. For this prototype, runtimes with big
 startup costs and memory requirements are out... but I am open to
-supporting as many languages as possible.
+supporting as many languages as possible. The docker image is kept
+at <a href="https://index.docker.io/u/namin/io.livecode.ch/">namin/io.livecode.ch</a>.
 </p>
 
 <h2>Examples</h2>
@@ -63,7 +64,7 @@ What should the <code>.io.livecode.ch</code> directory contain?
  <li><code>_site/index.html</code>
  (<a href="https://github.com/webyrd/webmk/blob/master/.io.livecode.ch/_site/index.html">example</a>)<br>
  the interactive tutorial as an HTML template: each code snippet must be
- enclosed in <code>div</code> tags with the class <code>live</code>,
+ enclosed in a <code>div</code> tag with the class <code>live</code>,
  and have a globally unique <code>id</code>; the <code>data-lib</code> attribute
  is an optional space-separated list of other code
  snippet <code>id</code>s that are concatenated to form
