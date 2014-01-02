@@ -28,5 +28,9 @@ def local_preview(user, repo):
     j_defaults = local_defaults(user, repo)
     return render_template('local/%s/.io.livecode.ch/_site/index.html' % repo, user=user, repo=repo, language=j_defaults.get('language'))
 
+@app.route('/debug/<path:p>')
+def debug_page(p):
+    return render_template(p+'.html')
+
 if __name__ == "__main__":
     app.run(debug=True)

@@ -7,4 +7,78 @@
 {% endblock %}
 
 {% block content %}
+<p>
+<code>io.livecode.ch</code> is <em>an early stage prototype</em> for
+turning code repositories into interactive tutorials and books, with
+code snippets that can be edited and run on the web.
+</p>
+<p>The backend is powered by <a href="http://docker.io">docker.io</a>
+and is language-agnostic. For this prototype, runtimes with big
+startup costs and memory requirements are out... but I am open to
+supporting as many languages as possible.
+</p>
+
+<h2>Examples</h2>
+<p>
+<ul>
+ <li><a href="/learn/webyrd/webmk">miniKanren tutorial</a></li>
+ <li><a href="/learn/TiarkRompf/minidot">Twelf tutorial</a></li>
+</ul>
+</p>
+<h2>Your turn!</h2>
+<p>
+Add a <code>.io.livecode.ch</code> top-level folder to
+your <a href="http://github.com">GitHub</a> repository, then checkout
+the
+URLs <code>http://io.livecode.ch/repl/&lt;user&gt/&lt;repo&gt</code>
+and <code>http://io.livecode.ch/learn/&lt;user&gt/&lt;repo&gt</code>.
+</p>
+<p>
+To refresh the live installation on the server, checkout the URL
+<code>http://io.livecode.ch/repl/&lt;user&gt/&lt;repo&gt?refresh=1</code>.
+</p>
+<p>
+What should the <code>.io.livecode.ch</code> directory contain?
+<ul>
+ <li><code>defaults.json</code> (<a href="https://github.com/webyrd/webmk/blob/master/.io.livecode.ch/defaults.json">example</a>)<br>
+
+ a JSON file, with a property <code>language</code> with a value that
+ matches one of the <a href="https://github.com/namin/CodeMirror/tree/master/mode">languages supported</a> by this fork of
+ the CodeMirror JavaScript frontend
+
+ </li>
+
+ <li><code>install</code> (<a href="https://github.com/webyrd/webmk/blob/master/.io.livecode.ch/install">example</a>)<br>
+ an executable script that is run
+ from the top-level of the repository when it is first installed in
+ the system
+ </li>
+ <li><code>run</code> (<a href="https://github.com/webyrd/webmk/blob/master/.io.livecode.ch/run">example</a>) <br>
+ an executable script that is run from
+ the top-level of the repository to execute a snippet. The script
+ takes three absolute file paths for the <code>main</code> code snippet, and
+ two extra snippets, conventionally for <code>pre</code>
+ and <code>post</code> processing
+ </li>
+ <li><code>_site/index.html</code>
+ (<a href="https://github.com/webyrd/webmk/blob/master/.io.livecode.ch/_site/index.html">example</a>)<br>
+ the interactive tutorial as an HTML template: each code snippet must be
+ enclosed in <code>div</code> tags with the class <code>live</code>,
+ and have a globally unique <code>id</code>; the <code>data-lib</code> attribute
+ is an optional space-separated list of other code
+ snippet <code>id</code>s that are concatenated to form
+ the <code>pre</code> snippet; the <code>post</code> snippet is not
+ yet used in the frontend
+ </li>
+</ul>
+</p>
+<p>I hope you'll have fun, but do keep in mind that this
+is <em>not at all</em> production-ready. Please also be gentle with the
+server&mdash;for now, it only has 512MB <em>total</em>!</p>
+<h2>Help!</h2>
+<p>
+I am looking for suggestions on how to take this prototype further.
+Please <a href="https://github.com/namin/io.livecode.ch/issues">file issues</a> for bugs and suggestions, or email me directly at <a href="mailto:namin@alum.mit.edu">namin@alum.mit.edu</a>.
+<a href="https://github.com/namin/io.livecode.ch/pulls">Pull requests</a> are also welcome!
+<p>
 {% endblock %}
