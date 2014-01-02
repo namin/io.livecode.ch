@@ -1,6 +1,9 @@
 body {
   margin: 4em;
   font-family: 'Georgia', serif;
+  max-width: 60em;
+  margin-left: auto;
+  margin-right: auto;
 }
 .hidden {
   display: none;
