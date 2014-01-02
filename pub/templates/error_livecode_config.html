@@ -3,7 +3,7 @@
 {% block content %}
 
 <p>
-There was an unexpected error in confugring the Github repository <a href="https://github.com/{{ user }}/{{ repo }}/tree/master/.io.livecode.ch">{{ user }}/{{ repo }}</a> for io.livecode.ch {{ ctx }}:
+There was an unexpected error in confugring the Github repository <a href="https://github.com/{{ user }}/{{ repo }}/tree/master/.io.livecode.ch">{{ user }}/{{ repo }}</a> for io.livecode.ch {% autoescape false %}{{ ctx }}{% endautoescape %}:
 <pre>
 {{ err }}
 </pre>
