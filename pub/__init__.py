@@ -131,7 +131,14 @@ def github_run(user, repo):
             10,
             request.form.get('cmd', './.io.livecode.ch/run'),
             url_main, url_pre, url_post))
-    return o_run['out']
+    out = o_run['out']
+    if o_run['status']==0:
+        # remove wget noise -- first three lines
+        n = 0
+        for i in range(0, 3):
+            n = out.index('\n', n)+1
+        out = out[n:-1]
+    return out
 
 @app.route('/api/snippet/<key>')
 def snippet(key):
