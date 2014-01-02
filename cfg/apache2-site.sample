@@ -1,0 +1,17 @@
+<VirtualHost *:80>
+  ServerName io.livecode.ch
+  ServerAdmin namin@alum.mit.edu
+  WSGIScriptAlias / /var/www/io.livecode.ch/app.wsgi
+  <Directory /var/www/io.livecode.ch/pub>
+  Order allow,deny
+  Allow from all
+</Directory>
+Alias /static /var/www/io.livecode.ch/pub/static
+<Directory /var/www/io.livecode.ch/pub/static/>
+Order allow,deny
+Allow from all
+</Directory>
+ErrorLog ${APACHE_LOG_DIR}/error.log
+LogLevel warn
+CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
