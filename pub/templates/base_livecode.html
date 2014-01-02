@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="/static/lib/CodeMirror/lib/codemirror.css" type="text/css" />
+<link rel="stylesheet" href="/static/livecode.css" type="text/css" />
+<script src="/static/lib/CodeMirror/lib/codemirror.js"></script>
+{% if language %}
+<script src="/static/lib/CodeMirror/mode/{{ language }}/{{ language }}.js"></script>
+{% endif %}
+<style type="text/css">
+.CodeMirror {
+  border: 1px solid #eee;
+  height: auto;
+}
+.CodeMirror-scroll {
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+</style>
+{% endblock %}
+
+{% block content %}{{ super }}{% endblock %}
+
+{% block body_extra %}
+<script>
+$(function() {
+  function create_editor(id) {
+    return CodeMirror.fromTextArea(document.getElementById(id), {
+{% if language %}
+      mode: '{{ language }}',
+{% endif %}
+      tabMode: 'indent',
+      lineNumbers: true
+    });
+  }
+
+  var editors = {}
+  $('.live').each(function(index) {
+    var id = $(this).attr('id');
+    var libs = $(this).attr('data-lib');
+    var code_id = 'code-'+id;
+    var check_id = 'check-'+id;
+    var output_id = 'output-'+id;
+    var code = $(this).text();
+    $(this).text("");
+    $(this).html("<textarea name="+code_id+" id="+code_id+">"+code+"</textarea><div><i id="+check_id+" class=\"fa fa-play-circle-o icon\"></i> <pre class=output id="+output_id+"></pre></div>");
+    editors[id] = create_editor(code_id);
+    $('#'+check_id).click(function () {
+      $('#'+check_id).addClass('running');
+      var lib_txt = libs ? $.map(libs.split(' '), function(lib_id) {
+        return editors[lib_id].getValue();
+      }).join('\n') : '';
+      var app_txt = editors[id].getValue();
+      $.post('/api/run/{{ user }}/{{ repo }}', {'pre':lib_txt, 'main':app_txt, 'post':''}, function (data) {
+        $('#'+output_id).text(data);
+        $('#'+check_id).removeClass('running');
+      });
+    })
+
+
+    if ($(this).hasClass('exo')) {
+      var sol_id = 'sol-'+id;
+      var exo_id = 'exo-'+id;
+      var solshow_id = 'solshow-'+id;
+      $('#'+exo_id).prepend("<i id="+solshow_id+" class=\"fa fa-check-circle-o icon\"></i> ");
+      $('#'+solshow_id).click(function () {
+        editors[id].setValue($('#'+sol_id).text());
+      })
+    }
+
+    if ($(this).hasClass('norun')) {
+      $('#'+check_id).addClass('hidden');
+    }
+  });
+});
+</script>
+{% endblock %}

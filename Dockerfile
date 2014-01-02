@@ -80,10 +80,6 @@ RUN sudo -u runner mkdir /home/runner/bin
 ## Install io.livecode.ch scripts ##
 ADD dkr/livecode-install /tmp/livecode-install
 ADD dkr/livecode-run /tmp/livecode-run
-ADD dkr/livecode-repl-install /tmp/livecode-repl-install
-ADD dkr/livecode-repl-run /tmp/livecode-repl-run
 RUN cd /home/runner/bin;\
     sudo -u runner cp /tmp/livecode-install .;\
-    sudo -u runner cp /tmp/livecode-run .;\
-    sudo -u runner cp /tmp/livecode-repl-install .;\
-    sudo -u runner cp /tmp/livecode-repl-run .
+    sudo -u runner cp /tmp/livecode-run .
