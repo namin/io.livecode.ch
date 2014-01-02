@@ -110,6 +110,9 @@ def snippet_cache(txt):
     redis.hset('snippet', key, txt)
     return 'http://%s/api/snippet/%s' % (app.config['SERVER_NAME'], key)
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('error_404.html', status=e), 404
 
 if __name__ == "__main__":
     app.run()
