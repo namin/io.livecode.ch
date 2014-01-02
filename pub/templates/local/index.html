@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}io.livecode.ch: preview your site locally{% endblock %}
+
+{% block content %}
+<p>
+Clone your repository in the <code>pub/templates/local</code> directory.
+Then, go to <code>/learn/&lt;user&gt;/&lt;repo&gt</code>.
+</p>
+
+<p>
+This is only to preview the <em>site</em>. The code must be live on <a href="http://io.livecode.ch">io.livecode.ch</a>.
+To refresh the live installation, push your repository to github, and go to <code>http://io.livecode.ch/repl/&lt;user&gt;/&lt;repo&gt;?refresh=1</code>
+</p>
+{% endblock %}
