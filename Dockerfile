@@ -63,6 +63,15 @@ RUN  cd /code;\
      chmod 755 twelf-server;\
      cp twelf-server /usr/local/bin
 
+### SCMUTILS ###
+RUN cd /code;\
+    mkdir scmutils;\
+    cd scmutils;\
+    wget -nv http://groups.csail.mit.edu/mac/users/gjs/6946/scmutils-tarballs/scmutils-20130901-x86-64-gnu-linux.tar.gz;\
+    cd /usr/local;\
+    tar -xvf /code/scmutils/scmutils-20130901-x86-64-gnu-linux.tar.gz
+ADD dkr/software/mechanics-shell /usr/local/bin/mechanics-shell
+
 ## user runner ##
 
 RUN apt-get install -y sudo
