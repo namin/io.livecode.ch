@@ -37,5 +37,7 @@ powered by [docker](http://docker.io), [redis](http://redis.io), ...
 Docker cheat sheet
 ------------------
 
-* `docker run -i -t -u runner -e HOME=/home/runner namin/io.livecode.ch /bin/bash --login` (shell access)
-* `docker build -t=namin/dev .` (build the image from [Dockerfile](/Dockerfile))
+* `docker run -i -t -u runner -e HOME=/home/runner namin/io.livecode.ch /bin/bash --login`
+   (shell access)
+* `docker build -t=namin/dev .`
+   (build the image from the [Dockerfile](/Dockerfile))
