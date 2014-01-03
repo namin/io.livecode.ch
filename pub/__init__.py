@@ -15,32 +15,57 @@ redis = Redis()
 import docker
 
 import hashlib
+import re
 
 import requests
 
 def dkr_base_img():
     return 'namin/'+app.config['SERVER_NAME']
 
-def dkr_check_img(img, git_url, refresh=False, timeout=60, cmd=".io.livecode.ch/install"):
+def dkr_parse_id(txt, img):
+    m = re.search(r'{"id":"([^"]*)"}', txt)
+    if m:
+        return m.group(1)
+    else:
+        return img
+
+def dkr_check_img(img, git_url, refresh=False):
     c = docker.Client(base_url='unix://var/run/docker.sock',
                            version='1.8',
                            timeout=10)
     if not refresh and c.images(img) != []:
         return {'status':0, 'out':'already installed'}
-    return dkr_run(dkr_base_img(), '/home/runner/bin/livecode-install %d %s %s' % (timeout, cmd, git_url), img)
-
-def dkr_run(img, cmd, commit=None):
-    c = docker.Client(base_url='unix://var/run/docker.sock',
-                           version='1.8',
-                           timeout=10)
-    m = c.create_container(img, cmd, user='runner', environment={'HOME':'/home/runner'})
+    m = c.create_container(dkr_base_img(), 'git clone "%s" /home/runner/code' % git_url, user='runner')
     id = m['Id']
     c.start(id)
     s = c.wait(id)
+    if s!=0:
+        return {'status':s, 'out':'error cloning repository %s' % git_url}
+    try:
+        c.commit(id, img)
+        return dkr_run(img, 'livecode-install', img, c=c)
+    finally:
+        c.remove_container(id)
+
+def dkr_run(img, cmd, commit=None, timeout=5, insert_files=None, c=None):
+    if not c:
+        c = docker.Client(base_url='unix://var/run/docker.sock',
+                          version='1.8',
+                          timeout=10)
     r = ""
+    if insert_files:
+        for file_name, file_url in insert_files.iteritems():
+            txt = c.insert(img, file_url, '/home/runner/files/%s' % file_name)
+            img = dkr_parse_id(txt, img)
+    m = c.create_container(img, "timeout %d %s" % (timeout, cmd), user='runner', environment={'HOME':'/home/runner'}, network_disabled=True)
+    id = m['Id']
+    c.start(id)
+    s = c.wait(id)
     if s!=0:
         r += "error: (%d)\n" % s
-    if s==125:
+    if s==137:
+        r += "killed!"
+    elif s==125:
         r += "timeout!"
     elif s==124:
         r += "inifinite loop!"
@@ -125,19 +150,8 @@ def github_run(user, repo):
     url_main = snippet_cache(input_main)
     url_pre = snippet_cache(input_pre)
     url_post = snippet_cache(input_post)
-    o_run = dkr_run(
-        github_dkr_img(user, repo),
-        '/home/runner/bin/livecode-run %d %s %s %s %s' % (
-            10,
-            request.form.get('cmd', './.io.livecode.ch/run'),
-            url_main, url_pre, url_post))
+    o_run = dkr_run(github_dkr_img(user, repo), 'livecode-run', insert_files={'main.txt':url_main, 'pre.txt':url_pre, 'post.txt':url_post})
     out = o_run['out']
-    if o_run['status']==0:
-        # remove wget noise -- first three lines
-        n = 0
-        for i in range(0, 3):
-            n = out.index('\n', n)+1
-        out = out[n:-1]
     return out
 
 @app.route('/api/snippet/<key>')

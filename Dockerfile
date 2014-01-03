@@ -80,15 +80,13 @@ RUN apt-get install -y dos2unix
 
 RUN useradd -m -d /home/runner -s /bin/bash runner
 
+## Install io.livecode.ch scripts ##
+ADD dkr/livecode-install /usr/local/bin/livecode-install
+ADD dkr/livecode-run /usr/local/bin/livecode-run
+
 ## From now on, everything is executed as user runner ##
 ENV HOME /home/runner
 RUN env
 
 RUN sudo -u runner mkdir /home/runner/bin
-
-## Install io.livecode.ch scripts ##
-ADD dkr/livecode-install /tmp/livecode-install
-ADD dkr/livecode-run /tmp/livecode-run
-RUN cd /home/runner/bin;\
-    sudo -u runner cp /tmp/livecode-install .;\
-    sudo -u runner cp /tmp/livecode-run .
+RUN sudo -u runner mkdir /home/runner/files

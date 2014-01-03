@@ -1,7 +1,5 @@
 #!/bin/bash
 set -e
 
-cd $HOME
-git clone $3 code
-cd code
-timeout $1 $2
+cd $HOME/code
+./.io.livecode.ch/install

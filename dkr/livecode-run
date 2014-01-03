@@ -1,13 +1,5 @@
-#!/bin/bash                                                                                                                                                            
+#!/bin/bash
 set -e
- 
-cd $HOME
-mkdir -p files
 
-wget -nv -O files/main.txt $3
-wget -nv -O files/pre.txt $4
-wget -nv -O files/post.txt $5
-
-cd code
-
-timeout $1 $2 $HOME/files/main.txt $HOME/files/pre.txt $HOME/files/post.txt
+cd $HOME/code
+./.io.livecode.ch/run $HOME/files/main.txt $HOME/files/pre.txt $HOME/files/post.txt
