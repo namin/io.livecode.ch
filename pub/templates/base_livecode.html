@@ -44,8 +44,12 @@ $(function() {
     var check_id = 'check-'+id;
     var output_id = 'output-'+id;
     var code = $(this).text();
+    var extra = "";
+    if (typeof livecode_html_extra != "undefined") {
+      extra = livecode_html_extra(id);
+    }
     $(this).text("");
-    $(this).html("<textarea name="+code_id+" id="+code_id+">"+code+"</textarea><div><i id="+check_id+" class=\"fa fa-play-circle-o icon\"></i> <pre class=output id="+output_id+"></pre></div>");
+    $(this).html("<textarea name="+code_id+" id="+code_id+">"+code+"</textarea><div><i id="+check_id+" class=\"fa fa-play-circle-o icon\"></i> <pre class=output id="+output_id+"></pre>"+extra+"</div>");
     editors[id] = create_editor(code_id);
     $('#'+check_id).click(function () {
       $('#'+check_id).addClass('running');
@@ -54,6 +58,9 @@ $(function() {
       }).join('\n') : '';
       var app_txt = editors[id].getValue();
       $.post('/api/run/{{ user }}/{{ repo }}', {'pre':lib_txt, 'main':app_txt, 'post':''}, function (data) {
+        if (typeof livecode_process_data != "undefined") {
+          data = livecode_process_data(id, data);
+        }
         $('#'+output_id).text(data);
         $('#'+check_id).removeClass('running');
       });
