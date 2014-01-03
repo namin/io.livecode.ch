@@ -1,3 +1,0 @@
-[submodule "pub/static/lib/CodeMirror"]
-	path = pub/static/lib/CodeMirror
-	url = https://github.com/namin/CodeMirror.git
