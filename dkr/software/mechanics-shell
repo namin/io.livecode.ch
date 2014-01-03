@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# a shell over SCMUTILS
+
+ROOT="${SCMUTILS_ROOT:-/usr/local/scmutils}"
+SCHEME="${ROOT}/mit-scheme/bin/scheme --library ${ROOT}/mit-scheme/lib"
+CMD="${SCHEME} --heap 10000 --band edwin-mechanics.com $@"
+
+export -n MITSCHEME_INF_DIRECTORY
+
+exec ${CMD}
