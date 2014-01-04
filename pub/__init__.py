@@ -108,9 +108,9 @@ def handle_user_error(e):
     return render_template(e.template_file, user=e.user, repo=e.repo, status=e.status_code, ctx=e.ctx, err=e.err), e.status_code
 
 def fetch_defaults(user, repo):
-    r_check = requests.head(github_check_url(user, repo))
-    if r_check.status_code != 200:
-        raise UserError(user, repo, 'error_repo_not_found.html', r_check.status_code)
+    #r_check = requests.head(github_check_url(user, repo))
+    #if r_check.status_code != 200:
+    #    raise UserError(user, repo, 'error_repo_not_found.html', r_check.status_code)
     r_defaults = requests.get(github_defaults_url(user, repo))
     if r_defaults.status_code != 200:
         raise UserError(user, repo, 'error_livecode_not_found.html', r_defaults.status_code)
