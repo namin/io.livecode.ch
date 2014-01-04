@@ -33,6 +33,8 @@ def dkr_check_img(img, git_url, refresh=False):
     c = docker.Client(base_url='unix://var/run/docker.sock',
                            version='1.8',
                            timeout=10)
+    if refresh:
+        redis.delete(img)
     if not refresh and c.images(img) != []:
         return {'status':0, 'out':'already installed'}
     m = c.create_container(dkr_base_img(), 'git clone "%s" /home/runner/code' % git_url, user='runner')
@@ -150,8 +152,13 @@ def github_run(user, repo):
     url_main = snippet_cache(input_main)
     url_pre = snippet_cache(input_pre)
     url_post = snippet_cache(input_post)
+    cache = redis.hget(github_dkr_img(user, repo), '%s/%s/%s' % (url_main, url_pre, url_post))
+    if cache:
+        return cache
     o_run = dkr_run(github_dkr_img(user, repo), 'livecode-run', insert_files={'main.txt':url_main, 'pre.txt':url_pre, 'post.txt':url_post})
     out = o_run['out']
+    if o_run['status']!=137:
+        redis.hset(github_dkr_img(user, repo), '%s/%s/%s' % (url_main, url_pre, url_post), out)
     return out
 
 @app.route('/api/snippet/<key>')
