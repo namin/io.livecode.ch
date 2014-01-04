@@ -22,12 +22,12 @@ import requests
 def dkr_base_img():
     return 'namin/'+app.config['SERVER_NAME']
 
-def dkr_parse_id(txt, img):
+def dkr_parse_id(txt):
     m = re.search(r'{"id":"([^"]*)"}', txt)
     if m:
         return m.group(1)
     else:
-        return img
+        return None
 
 def dkr_check_img(img, git_url, refresh=False):
     c = docker.Client(base_url='unix://var/run/docker.sock',
@@ -55,10 +55,14 @@ def dkr_run(img, cmd, commit=None, timeout=5, insert_files=None, c=None):
                           version='1.8',
                           timeout=10)
     r = ""
+    tmp_imgs = []
     if insert_files:
         for file_name, file_url in insert_files.iteritems():
             txt = c.insert(img, file_url, '/home/runner/files/%s' % file_name)
-            img = dkr_parse_id(txt, img)
+            tmp_img = dkr_parse_id(txt)
+            if tmp_img:
+                tmp_imgs.append(tmp_img)
+                img = tmp_img
     m = c.create_container(img, "timeout %d %s" % (timeout, cmd), user='runner', environment={'HOME':'/home/runner'}, network_disabled=True)
     id = m['Id']
     c.start(id)
@@ -75,8 +79,14 @@ def dkr_run(img, cmd, commit=None, timeout=5, insert_files=None, c=None):
         r += c.logs(id)
     if commit:
         c.commit(id, repository=commit)
-    c.remove_container(id)
-    return {'status':s, 'out':r}
+    try:
+        return {'status':s, 'out':r}
+    finally:
+        c.remove_container(id)
+        if tmp_imgs!=[]:
+            for i in tmp_imgs:
+                c.remove_container(c.inspect_image(i)['container'])
+            c.remove_image(tmp_imgs[-1])
 
 def github_dkr_img(user, repo):
     return 'temp/%s/github.com/%s/%s' % (app.config['SERVER_NAME'], user, repo)
