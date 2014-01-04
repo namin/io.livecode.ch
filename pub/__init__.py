@@ -92,7 +92,7 @@ def github_dkr_img(user, repo):
     return 'temp/%s/github.com/%s/%s' % (app.config['SERVER_NAME'], user, repo)
 
 def github_check_url(user, repo):
-    return 'https://api.github.com/repos/%s/%s' % (user, repo)
+    return 'https://github.com/%s/%s' % (user, repo)
 
 def github_git_url(user, repo):
     return 'https://github.com/%s/%s.git' % (user, repo)
@@ -120,12 +120,13 @@ def handle_user_error(e):
     return render_template(e.template_file, user=e.user, repo=e.repo, status=e.status_code, ctx=e.ctx, err=e.err), e.status_code
 
 def fetch_defaults(user, repo):
-    #r_check = requests.head(github_check_url(user, repo))
-    #if r_check.status_code != 200:
-    #    raise UserError(user, repo, 'error_repo_not_found.html', r_check.status_code)
     r_defaults = requests.get(github_defaults_url(user, repo))
     if r_defaults.status_code != 200:
-        raise UserError(user, repo, 'error_livecode_not_found.html', r_defaults.status_code)
+        r_check = requests.get(github_check_url(user, repo))
+        if r_check.status_code != 200:
+            raise UserError(user, repo, 'error_repo_not_found.html', r_check.status_code)
+        else:
+            raise UserError(user, repo, 'error_livecode_not_found.html', r_defaults.status_code)
     try:
         j_defaults = r_defaults.json()
     except ValueError as e:
