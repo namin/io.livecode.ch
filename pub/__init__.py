@@ -86,24 +86,29 @@ def github_git_url(user, repo):
 def github_defaults_url(user, repo):
     return 'https://raw.github.com/%s/%s/master/.io.livecode.ch/defaults.json' % (user, repo)
 
-def github_site_index_url(user, repo):
-    return 'https://raw.github.com/%s/%s/master/.io.livecode.ch/_site/index.html' % (user, repo)
+def github_site_index_url(user, repo, subdir):
+    if subdir:
+        subdir += '/'
+    else:
+        subdir = ""
+    return 'https://raw.github.com/%s/%s/master/.io.livecode.ch/_site/%sindex.html' % (user, repo, subdir)
 
 def github_site_index_src_link(user, repo):
     return 'https://github.com/%s/%s/tree/master/.io.livecode.ch/_site/index.html' % (user, repo)
 
 class UserError(Exception):
-    def __init__(self, user, repo, template_file='error_livecode_config.html', status_code=500, ctx=None, err=None):
+    def __init__(self, user, repo, template_file='error_livecode_config.html', status_code=500, ctx=None, err=None, subdir=None):
         self.user = user
         self.repo = repo
         self.template_file = template_file
         self.status_code = status_code
         self.ctx = ctx
         self.err = err
+        self.subdir = subdir
 
 @app.errorhandler(UserError)
 def handle_user_error(e):
-    return render_template(e.template_file, user=e.user, repo=e.repo, status=e.status_code, ctx=e.ctx, err=e.err), e.status_code
+    return render_template(e.template_file, user=e.user, repo=e.repo, status=e.status_code, ctx=e.ctx, err=e.err, subdir=e.subdir), e.status_code
 
 def fetch_defaults(user, repo):
     r_defaults = requests.get(github_defaults_url(user, repo))
@@ -128,11 +133,12 @@ def www_github_repl(user, repo):
     return render_template('repl.html', user=user, repo=repo, language=j_defaults.get('language'))
 
 @app.route("/learn/<user>/<repo>")
-def www_github_learn(user, repo):
+@app.route('/learn/<user>/<repo>/<subdir>')
+def www_github_learn(user, repo, subdir=None):
     j_defaults = fetch_defaults(user, repo)
-    r_index = requests.get(github_site_index_url(user, repo))
+    r_index = requests.get(github_site_index_url(user, repo, subdir))
     if r_index.status_code != 200:
-        raise UserError(user, repo, 'error_site_not_found.html', r_index.status_code)
+        raise UserError(user, repo, 'error_site_not_found.html', r_index.status_code, subdir=subdir)
     try:
         return render_template_string(r_index.text, user=user, repo=repo, language=j_defaults.get('language'))
     except TemplateSyntaxError as e:
