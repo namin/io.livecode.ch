@@ -20,7 +20,7 @@ import re
 import requests
 
 def dkr_base_img():
-    return 'namin/'+app.config['SERVER_NAME']
+    return app.config['DKR_BASE_IMAGE']
 
 def dkr_parse_id(txt, img):
     m = re.search(r'{"id":"([^"]*)"}', txt)
@@ -75,7 +75,7 @@ def dkr_run(img, cmd, commit=None, timeout=5, insert_files=None, c=None):
     return {'status':s, 'out':r}
 
 def github_dkr_img(user, repo):
-    return 'temp/%s/github.com/%s/%s' % (app.config['SERVER_NAME'], user, repo)
+    return '%s/github.com/%s/%s' % (app.config['DKR_IMAGE_PREFIX'], user, repo)
 
 def github_check_url(user, repo):
     return 'https://github.com/%s/%s' % (user, repo)
@@ -180,4 +180,4 @@ def handle_page_not_found(e):
     return render_template('error_404.html', status=e), 404
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', threaded=True)
