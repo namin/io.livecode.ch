@@ -55,6 +55,10 @@ Development server-side installation steps
 Production server-side installation steps
 -----------------------------------------
 
+hosted by [DigitalOcean](https://www.digitalocean.com), which also provides many helpful articles:
+* [How To Use the DigitalOcean Docker Application](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-docker-application)
+* [How To Deploy a Flask Application on an Ubuntu VPS](https://www.digitalocean.com/community/articles/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
+
 powered by [docker](http://docker.io), [redis](http://redis.io), [flask](http://flask.pocoo.org/)...
 
 * `docker pull namin/io.livecode.ch`
