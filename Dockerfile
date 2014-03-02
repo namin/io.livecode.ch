@@ -1,6 +1,6 @@
 # namin/io.livecode.ch
 
-FROM ubuntu
+FROM ubuntu:12.10
 MAINTAINER Nada Amin, namin@alum.mit.edu
 
 RUN apt-get install -y python-software-properties
