@@ -23,11 +23,11 @@ def dkr_base_img():
     return app.config['DKR_BASE_IMAGE']
 
 def dkr_parse_id(txt, img):
-    m = re.search(r'{"id":"([^"]*)"}', txt)
-    if m:
-        return m.group(1)
-    else:
-        return img
+    m = re.search(r'{"status":"([^"]*)"}', txt)
+    #if m:
+    return m.group(1)
+    #else:
+    #    return img
 
 def dkr_check_img(img, git_url, refresh=False):
     c = docker.Client(base_url='unix://var/run/docker.sock',
