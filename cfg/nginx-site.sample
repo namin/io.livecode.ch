@@ -1,0 +1,11 @@
+server {
+    listen       80;
+    server_name  io.livecode.ch;
+    location /static {
+      alias /var/www/io.livecode.ch/pub/static;
+    }
+    location / {
+      include uwsgi_params;
+      uwsgi_pass unix:/run/uwsgi/app/io.livecode.ch/socket;
+    }
+}

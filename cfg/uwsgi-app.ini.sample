@@ -1,0 +1,7 @@
+[uwsgi]
+socket = /run/uwsgi/app/io.livecode.ch/socket
+wsgi-file = /var/www/io.livecode.ch/app.wsgi
+master = true
+processes = 4
+threads = 2
+logto = /var/log/uwsgi/io.livecode.ch

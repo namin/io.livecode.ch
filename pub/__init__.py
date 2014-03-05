@@ -20,19 +20,21 @@ import re
 import requests
 
 def dkr_base_img():
-    return 'namin/'+app.config['SERVER_NAME']
+    return app.config['DKR_BASE_IMAGE']
 
 def dkr_parse_id(txt, img):
-    m = re.search(r'{"id":"([^"]*)"}', txt)
-    if m:
-        return m.group(1)
-    else:
-        return img
+    m = re.search(r'{"status":"([^"]*)"}', txt)
+    #if m:
+    return m.group(1)
+    #else:
+    #    return img
 
 def dkr_check_img(img, git_url, refresh=False):
     c = docker.Client(base_url='unix://var/run/docker.sock',
                            version='1.8',
                            timeout=10)
+    if refresh:
+        redis.delete(img)
     if not refresh and c.images(img) != []:
         return {'status':0, 'out':'already installed'}
     m = c.create_container(dkr_base_img(), 'git clone "%s" /home/runner/code' % git_url, user='runner')
@@ -41,11 +43,8 @@ def dkr_check_img(img, git_url, refresh=False):
     s = c.wait(id)
     if s!=0:
         return {'status':s, 'out':'error cloning repository %s' % git_url}
-    try:
-        c.commit(id, img)
-        return dkr_run(img, 'livecode-install', img, c=c)
-    finally:
-        c.remove_container(id)
+    c.commit(id, img)
+    return dkr_run(img, 'livecode-install', img, c=c)
 
 def dkr_run(img, cmd, commit=None, timeout=5, insert_files=None, c=None):
     if not c:
@@ -73,14 +72,13 @@ def dkr_run(img, cmd, commit=None, timeout=5, insert_files=None, c=None):
         r += c.logs(id)
     if commit:
         c.commit(id, repository=commit)
-    c.remove_container(id)
     return {'status':s, 'out':r}
 
 def github_dkr_img(user, repo):
-    return 'temp/%s/github.com/%s/%s' % (app.config['SERVER_NAME'], user, repo)
+    return '%s/github.com/%s/%s' % (app.config['DKR_IMAGE_PREFIX'], user, repo)
 
 def github_check_url(user, repo):
-    return 'https://api.github.com/repos/%s/%s' % (user, repo)
+    return 'https://github.com/%s/%s' % (user, repo)
 
 def github_git_url(user, repo):
     return 'https://github.com/%s/%s.git' % (user, repo)
@@ -88,32 +86,38 @@ def github_git_url(user, repo):
 def github_defaults_url(user, repo):
     return 'https://raw.github.com/%s/%s/master/.io.livecode.ch/defaults.json' % (user, repo)
 
-def github_site_index_url(user, repo):
-    return 'https://raw.github.com/%s/%s/master/.io.livecode.ch/_site/index.html' % (user, repo)
+def github_site_index_url(user, repo, subdir):
+    if subdir:
+        subdir += '/'
+    else:
+        subdir = ""
+    return 'https://raw.github.com/%s/%s/master/.io.livecode.ch/_site/%sindex.html' % (user, repo, subdir)
 
 def github_site_index_src_link(user, repo):
     return 'https://github.com/%s/%s/tree/master/.io.livecode.ch/_site/index.html' % (user, repo)
 
 class UserError(Exception):
-    def __init__(self, user, repo, template_file='error_livecode_config.html', status_code=500, ctx=None, err=None):
+    def __init__(self, user, repo, template_file='error_livecode_config.html', status_code=500, ctx=None, err=None, subdir=None):
         self.user = user
         self.repo = repo
         self.template_file = template_file
         self.status_code = status_code
         self.ctx = ctx
         self.err = err
+        self.subdir = subdir
 
 @app.errorhandler(UserError)
 def handle_user_error(e):
-    return render_template(e.template_file, user=e.user, repo=e.repo, status=e.status_code, ctx=e.ctx, err=e.err), e.status_code
+    return render_template(e.template_file, user=e.user, repo=e.repo, status=e.status_code, ctx=e.ctx, err=e.err, subdir=e.subdir), e.status_code
 
 def fetch_defaults(user, repo):
-    r_check = requests.head(github_check_url(user, repo))
-    if r_check.status_code != 200:
-        raise UserError(user, repo, 'error_repo_not_found.html', r_check.status_code)
     r_defaults = requests.get(github_defaults_url(user, repo))
     if r_defaults.status_code != 200:
-        raise UserError(user, repo, 'error_livecode_not_found.html', r_defaults.status_code)
+        r_check = requests.get(github_check_url(user, repo))
+        if r_check.status_code != 200:
+            raise UserError(user, repo, 'error_repo_not_found.html', r_check.status_code)
+        else:
+            raise UserError(user, repo, 'error_livecode_not_found.html', r_defaults.status_code)
     try:
         j_defaults = r_defaults.json()
     except ValueError as e:
@@ -129,11 +133,12 @@ def www_github_repl(user, repo):
     return render_template('repl.html', user=user, repo=repo, language=j_defaults.get('language'))
 
 @app.route("/learn/<user>/<repo>")
-def www_github_learn(user, repo):
+@app.route('/learn/<user>/<repo>/<subdir>')
+def www_github_learn(user, repo, subdir=None):
     j_defaults = fetch_defaults(user, repo)
-    r_index = requests.get(github_site_index_url(user, repo))
+    r_index = requests.get(github_site_index_url(user, repo, subdir))
     if r_index.status_code != 200:
-        raise UserError(user, repo, 'error_site_not_found.html', r_index.status_code)
+        raise UserError(user, repo, 'error_site_not_found.html', r_index.status_code, subdir=subdir)
     try:
         return render_template_string(r_index.text, user=user, repo=repo, language=j_defaults.get('language'))
     except TemplateSyntaxError as e:
@@ -150,8 +155,13 @@ def github_run(user, repo):
     url_main = snippet_cache(input_main)
     url_pre = snippet_cache(input_pre)
     url_post = snippet_cache(input_post)
+    cache = redis.hget(github_dkr_img(user, repo), '%s/%s/%s' % (url_main, url_pre, url_post))
+    if cache:
+        return cache
     o_run = dkr_run(github_dkr_img(user, repo), 'livecode-run', insert_files={'main.txt':url_main, 'pre.txt':url_pre, 'post.txt':url_post})
     out = o_run['out']
+    if o_run['status']!=137:
+        redis.hset(github_dkr_img(user, repo), '%s/%s/%s' % (url_main, url_pre, url_post), out)
     return out
 
 @app.route('/api/snippet/<key>')
@@ -176,4 +186,4 @@ def handle_page_not_found(e):
     return render_template('error_404.html', status=e), 404
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', threaded=True)

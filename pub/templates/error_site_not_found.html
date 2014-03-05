@@ -2,6 +2,11 @@
 
 {% block content %}
 
+{% if subdir %}
+<p>
+The Github repository <a href="https://github.com/{{ user }}/{{ repo }}/tree/master/.io.livecode.ch/_site/">{{ user }}/{{ repo }}</a> does not have file <a href="https://github.com/{{ user }}/{{ repo }}/tree/master/.io.livecode.ch/_site/{{subdir}}/index.html">.io.livecode.ch/_site/{{subdir}}/index.html</a>.
+</p>
+{% else %}
 <p>
 The Github repository <a href="https://github.com/{{ user }}/{{ repo }}/tree/master/.io.livecode.ch/_site/index.html">{{ user }}/{{ repo }}</a> has no associated <code>.io.livecode.ch/_site/index.html</code>.
 </p>
@@ -13,5 +18,5 @@ Fork it, and add a <code>.io.livecode.ch/_site/index.html</code> page.
 <p>
 See <a href="https://github.com/webyrd/webmk/tree/master/.io.livecode.ch/_site/index.html">webyrd/webmk</a> for an example.
 </p>
-
+{% endif %}
 {% endblock %}

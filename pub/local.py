@@ -24,9 +24,14 @@ def local_defaults(user, repo):
         return json.load(f_defaults)
 
 @app.route('/learn/<user>/<repo>')
-def local_preview(user, repo):
+@app.route('/learn/<user>/<repo>/<subdir>')
+def local_preview(user, repo, subdir=None):
     j_defaults = local_defaults(user, repo)
-    return render_template('local/%s/.io.livecode.ch/_site/index.html' % repo, user=user, repo=repo, language=j_defaults.get('language'))
+    if subdir:
+        subdir += '/'
+    else:
+        subdir = ""
+    return render_template('local/%s/.io.livecode.ch/_site/%sindex.html' % (repo, subdir), user=user, repo=repo, language=j_defaults.get('language'))
 
 @app.route('/debug/<path:p>')
 def debug_page(p):
