@@ -3,7 +3,7 @@
 FROM ubuntu:12.10
 MAINTAINER Nada Amin, namin@alum.mit.edu
 
-RUN apt-get install -y python-software-properties
+# RUN apt-get install -y python-software-properties
 RUN apt-get install -y software-properties-common
 
 RUN add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
