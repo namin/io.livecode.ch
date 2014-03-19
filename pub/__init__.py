@@ -181,6 +181,10 @@ def snippet_cache(txt):
 def index():
     return render_template('index.html')
 
+@app.route('/howto')
+def howto():
+    return render_template('howto.html')
+
 @app.errorhandler(404)
 def handle_page_not_found(e):
     return render_template('error_404.html', status=e), 404
