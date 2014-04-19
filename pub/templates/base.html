@@ -11,7 +11,7 @@
 {% block head_extra %}{% endblock %}
   </head>
 <body>
-<h1>{{ self.title() }}</h1>
+<h1>{{ self.title()|safe }}</h1>
 
 {% block body_top_extra %}{% endblock %}
 
