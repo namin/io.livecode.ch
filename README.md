@@ -21,35 +21,28 @@ Test your .io.livecode.ch/_site locally
 Development server-side installation steps
 ------------------------------------------
 
-* On host machine (skip these steps if you have docker installed directly on your machine, without using [Vagrant](http://www.vagrantup.com/)):
-  * `git clone https://github.com/dotcloud/docker.git`
-  * `cd docker`
-  * Add the following to the end of `Vagrantfile`:
+These steps have been tested on an Ubuntu derivative.
 
-
-          Vagrant.configure("2") do |config|
-            config.vm.network "forwarded_port", guest: 5000, host: 5000
-          end
-
-
-  * `vagrant up`
-  * `vagrant ssh`
-
-* On guest machine:
-  * `docker pull namin/io.livecode.ch`
+* Install dependencies
+  * [Install docker](https://docs.docker.com/installation/ubuntulinux/).
   * `sudo apt-get install redis-server python-pip git`
-  * `sudo pip install flask redis`
-  * `mkdir ~/code`
-  * `cd ~/code`
-  * `git clone https://github.com/dotcloud/docker-py.git`
-  * `cd docker-py`
-  * `sudo python setup.py install`
-  * `cd ~/code`
-  * `git clone https://github.com/namin/io.livecode.ch`
-  * `cd io.livecode.ch`
-  * `git submodule init; git submodule update`
-  * `cd pub`
-  * `export APP_SETTINGS=~/code/io.livecode.ch/cfg/vagrant.cfg`
+  * `sudo pip install flask redis docker-py`
+
+* Set up local `io.livecode.ch` repository in a directory of your choice
+  * `git clone --recursive https://github.com/namin/io.livecode.ch`
+  * `export LIVECODE_DIR=``pwd``/io.livecode.ch`
+
+* Install the `io.livecode.ch` docker image
+  * Get the official image
+    * `docker pull namin/io.livecode.ch`
+    * `export LIVECODE_CONFIG="dev"`
+  * **Or** build your own from the source repo
+    * `cd $LIVECODE_DIR; docker build -t=namin/io.livecode.ch-dev .`
+    * `export LIVECODE_CONFIG="dev_docker"`
+
+* Run local development server
+  * `export APP_SETTINGS=$LIVECODE_DIR/cfg/$LIVECODE_CONFIG.cfg`
+  * `cd $LIVECODE_DIR`
   * `python __init__.py`
 
 Production server-side installation steps
