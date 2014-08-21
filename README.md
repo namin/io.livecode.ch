@@ -79,7 +79,7 @@ These steps have been tested on a [DigitalOcean](https://www.digitalocean.com) d
         * `sudo apt-get install emacs24`
         * `git clone -b server https://github.com/namin/.emacs.d.git`
            
-           (in $HOME directory)
+           (in `$HOME` directory)
         * run `emacs` to ensure customization works
       * configure git
         * `git config --global user.name "Nada Amin"`
