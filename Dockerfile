@@ -1,15 +1,15 @@
 # namin/io.livecode.ch
 
-FROM ubuntu:12.10
+FROM ubuntu:14.04
 MAINTAINER Nada Amin, namin@alum.mit.edu
 
-# RUN apt-get install -y python-software-properties
-RUN apt-get install -y software-properties-common
+RUN \
+  sed -i 's/# \(.*multiverse$\)/\1/g' /etc/apt/sources.list && \
+  apt-get update && \
+  apt-get -y upgrade && \
+  apt-get install -y build-essential && \
+  apt-get install -y software-properties-common
 
-RUN add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
-
-RUN apt-get update
-RUN apt-get upgrade -y
 RUN locale-gen en_US en_US.UTF-8
 
 RUN apt-get install -y curl wget

@@ -2,4 +2,7 @@
 set -e
 
 cd $HOME/code
+cp /mnt/snippets/$1 $HOME/files/main.txt
+cp /mnt/snippets/$2 $HOME/files/pre.txt
+cp /mnt/snippets/$3 $HOME/files/post.txt
 ./.io.livecode.ch/run $HOME/files/main.txt $HOME/files/pre.txt $HOME/files/post.txt
