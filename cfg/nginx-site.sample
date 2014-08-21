@@ -5,7 +5,10 @@ server {
       alias /var/www/io.livecode.ch/pub/static;
     }
     location / {
-      include uwsgi_params;
       uwsgi_pass unix:/run/uwsgi/app/io.livecode.ch/socket;
+      include uwsgi_params;
+      uwsgi_param SCRIPT_NAME '';
+      uwsgi_param HTTP_HOST $server_name;
+      uwsgi_intercept_errors on; # let nginx serve error_page
     }
 }

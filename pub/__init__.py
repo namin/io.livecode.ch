@@ -6,8 +6,14 @@ from flask import jsonify
 from flask import json
 from jinja2.exceptions import TemplateSyntaxError
 
+import os
+
 app = Flask(__name__)
 app.config.from_envvar('APP_SETTINGS')
+if 'DOCKER_HOST' not in app.config:
+    app.config['DOCKER_HOST'] = os.environ.get('DOCKER_HOST', 'unix://var/run/docker.sock')
+if not os.path.exists(app.config['SNIPPET_TMP_DIR']):
+    os.makedirs(app.config['SNIPPET_TMP_DIR'])
 
 from redis import Redis
 redis = Redis()
@@ -22,17 +28,13 @@ import requests
 def dkr_base_img():
     return app.config['DKR_BASE_IMAGE']
 
-def dkr_parse_id(txt, img):
-    m = re.search(r'{"status":"([^"]*)"}', txt)
-    #if m:
-    return m.group(1)
-    #else:
-    #    return img
+def dkr_client():
+    return docker.Client(base_url=app.config['DOCKER_HOST'],
+                         version='1.13',
+                         timeout=10)
 
 def dkr_check_img(img, git_url, refresh=False):
-    c = docker.Client(base_url='unix://var/run/docker.sock',
-                           version='1.8',
-                           timeout=10)
+    c = dkr_client()
     if refresh:
         redis.delete(img)
     if not refresh and c.images(img) != []:
@@ -46,19 +48,17 @@ def dkr_check_img(img, git_url, refresh=False):
     c.commit(id, img)
     return dkr_run(img, 'livecode-install', img, c=c)
 
-def dkr_run(img, cmd, commit=None, timeout=5, insert_files=None, c=None):
-    if not c:
-        c = docker.Client(base_url='unix://var/run/docker.sock',
-                          version='1.8',
-                          timeout=10)
+def dkr_run(img, cmd, commit=None, timeout=5, c=None):
+    c = c or dkr_client()
     r = ""
-    if insert_files:
-        for file_name, file_url in insert_files.iteritems():
-            txt = c.insert(img, file_url, '/home/runner/files/%s' % file_name)
-            img = dkr_parse_id(txt, img)
-    m = c.create_container(img, "timeout %d %s" % (timeout, cmd), user='runner', environment={'HOME':'/home/runner'}, network_disabled=True)
+    m = c.create_container(img,
+                           "timeout %d %s" % (timeout, cmd),
+                           user='runner',
+                           environment={'HOME':'/home/runner'},
+                           volumes=['/mnt/snippets'],
+                           network_disabled=True)
     id = m['Id']
-    c.start(id)
+    c.start(id, binds={app.config['SNIPPET_TMP_DIR']: { 'bind': '/mnt/snippets', 'ro': True }})
     s = c.wait(id)
     if s!=0:
         r += "error: (%d)\n" % s
@@ -152,34 +152,33 @@ def github_run(user, repo):
     input_main = request.form['main']
     input_pre = request.form['pre']
     input_post = request.form['post']
-    url_main = snippet_cache(input_main)
-    url_pre = snippet_cache(input_pre)
-    url_post = snippet_cache(input_post)
-    cache = redis.hget(github_dkr_img(user, repo), '%s/%s/%s' % (url_main, url_pre, url_post))
+    key_main = snippet_cache(input_main)
+    key_pre = snippet_cache(input_pre)
+    key_post = snippet_cache(input_post)
+    cache = redis.hget(github_dkr_img(user, repo), '%s/%s/%s' % (key_main, key_pre, key_post))
     if cache:
         return cache
-    o_run = dkr_run(github_dkr_img(user, repo), 'livecode-run', insert_files={'main.txt':url_main, 'pre.txt':url_pre, 'post.txt':url_post})
+    o_run = dkr_run(github_dkr_img(user, repo), 'livecode-run %s %s %s' % (key_main, key_pre, key_post))
     out = o_run['out']
     if o_run['status']!=137:
-        redis.hset(github_dkr_img(user, repo), '%s/%s/%s' % (url_main, url_pre, url_post), out)
+        redis.hset(github_dkr_img(user, repo), '%s/%s/%s' % (key_main, key_pre, key_post), out)
     return out
-
-@app.route('/api/snippet/<key>')
-def snippet(key):
-    txt = redis.hget('snippet', key)
-    if txt is not None:
-        return txt
-    else:
-        return 'None', 404
 
 def snippet_cache(txt):
     key = hashlib.md5(txt.encode('utf-8')).hexdigest()
-    redis.hset('snippet', key, txt)
-    return 'http://%s/api/snippet/%s' % (app.config['SERVER_NAME'], key)
+    fn = os.path.join(app.config['SNIPPET_TMP_DIR'], key)
+    if not os.path.isfile(fn):
+        with open(fn, 'w') as f:
+            f.write(txt)
+    return key
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/howto')
+def howto():
+    return render_template('howto.html')
 
 @app.errorhandler(404)
 def handle_page_not_found(e):

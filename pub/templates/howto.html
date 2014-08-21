@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}How to Create a <a href="http://io.livecode.ch"><code>io.livecode.ch</code></a> Tutorial{% endblock %}
+
+{% block body_top_extra %}
+<a href="https://github.com/namin/io.livecode.ch"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+{% endblock %}
+
+{% block content %}
+<p>
+Add a <code>.io.livecode.ch</code> top-level folder to
+your <a href="http://github.com">GitHub</a> repository, then visit
+the
+URLs <code>http://io.livecode.ch/repl/&lt;user&gt/&lt;repo&gt</code>
+and <code>http://io.livecode.ch/learn/&lt;user&gt/&lt;repo&gt</code>.
+</p>
+<p>
+To refresh the live installation on the server, visit the URL
+<code>http://io.livecode.ch/repl/&lt;user&gt/&lt;repo&gt?refresh=1</code>.
+</p>
+<p>
+What should the <code>.io.livecode.ch</code> directory contain?
+<ul>
+ <li><code>defaults.json</code> (<a href="https://github.com/webyrd/webmk/blob/master/.io.livecode.ch/defaults.json">example</a>)<br>
+
+ a JSON file, with a property <code>language</code> with a value that
+ matches one of the <a href="https://github.com/namin/CodeMirror/tree/master/mode">languages supported</a> by this fork of
+ the CodeMirror JavaScript frontend
+
+ </li>
+
+ <li><code>install</code> (<a href="https://github.com/webyrd/webmk/blob/master/.io.livecode.ch/install">example</a>)<br>
+ an executable script that is run
+ from the top-level of the repository when it is first installed in
+ the system
+ </li>
+ <li><code>run</code> (<a href="https://github.com/webyrd/webmk/blob/master/.io.livecode.ch/run">example</a>) <br>
+ an executable script that is run from
+ the top-level of the repository to execute a snippet. The script
+ takes three absolute file paths for the <code>main</code> code snippet, and
+ two extra snippets, conventionally for <code>pre</code>
+ and <code>post</code> processing
+ </li>
+ <li><code>_site/index.html</code>
+ (<a href="https://github.com/webyrd/webmk/blob/master/.io.livecode.ch/_site/index.html">example</a>)<br>
+ the interactive tutorial as an HTML template: each code snippet must be
+ enclosed in a <code>div</code> tag with the class <code>live</code>,
+ and have a globally unique <code>id</code>; the <code>data-lib</code> attribute
+ is an optional space-separated list of other code
+ snippet <code>id</code>s that are concatenated to form
+ the <code>pre</code> snippet; the <code>post</code> snippet is not
+ yet used in the frontend
+ </li>
+</ul>
+</p>
+<p>I hope you'll have fun, but do keep in mind that this
+is <em>not at all</em> production-ready. Please also be gentle with the
+server :)!
+</p>
+{% endblock %}
