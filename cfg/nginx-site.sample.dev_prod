@@ -1,0 +1,14 @@
+server {
+    listen       80;
+    server_name  dev.livecode.ch;
+    location /static {
+      alias /var/www/dev.livecode.ch/pub/static;
+    }
+    location / {
+      uwsgi_pass unix:/run/uwsgi/app/dev.livecode.ch/socket;
+      include uwsgi_params;
+      uwsgi_param SCRIPT_NAME '';
+      uwsgi_param HTTP_HOST $server_name;
+      uwsgi_intercept_errors on; # let nginx serve error_page
+    }
+}
