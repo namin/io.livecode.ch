@@ -1,5 +1,5 @@
 server {
-    listen       80;
+    listen       80  default_server;
     server_name  io.livecode.ch;
     location /static {
       alias /var/www/io.livecode.ch/pub/static;
