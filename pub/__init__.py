@@ -129,7 +129,7 @@ def fetch_defaults(user, repo):
 
 @app.route("/repl/<user>/<repo>")
 @app.route("/repl/<user>/<repo>/<path:content_url>")
-def www_github_repl(user, repo, content_url):
+def www_github_repl(user, repo, content_url=''):
     j_defaults = fetch_defaults(user, repo)
     content = ''
     if content_url:
