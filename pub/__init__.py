@@ -128,9 +128,15 @@ def fetch_defaults(user, repo):
     return j_defaults
 
 @app.route("/repl/<user>/<repo>")
-def www_github_repl(user, repo):
+@app.route("/repl/<user>/<repo>/<path:content_url>")
+def www_github_repl(user, repo, content_url):
     j_defaults = fetch_defaults(user, repo)
-    return render_template('repl.html', user=user, repo=repo, language=j_defaults.get('language'))
+    content = ''
+    if content_url:
+        r_content = requests.get('http://'+content_url)
+        if r_content.status_code == 200:
+            content = r_content.text
+    return render_template('repl.html', user=user, repo=repo, content=content, language=j_defaults.get('language'))
 
 @app.route("/learn/<user>/<repo>")
 @app.route('/learn/<user>/<repo>/<subdir>')
