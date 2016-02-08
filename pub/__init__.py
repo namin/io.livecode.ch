@@ -182,14 +182,14 @@ def gist_save(user, repo):
     gist_create_url = 'https://api.github.com/gists'
     r = requests.post(gist_create_url, json=data)
     result = r.json()
-    return result['id']
+    return result.get('id', '')
 
 @app.route("/api/load/<user>/<repo>/<id>")
 def gist_load(user, repo, id):
     gist_get_url = 'https://api.github.com/gists/%s' % id
     r = requests.get(gist_get_url)
     result = r.json()
-    fs = result['files']
+    fs = result.get('files', {})
     data = {}
     for k,v in fs.iteritems():
         data[k] = v['content']
