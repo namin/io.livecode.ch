@@ -170,6 +170,31 @@ def github_run(user, repo):
         redis.hset(github_dkr_img(user, repo), '%s/%s/%s' % (key_main, key_pre, key_post), out)
     return out
 
+@app.route("/api/save/<user>/<repo>", methods=['POST'])
+def gist_save(user, repo):
+    fs = {}
+    for k,v in request.form.iteritems():
+        fs[k] = {'content': v}
+    data = {}
+    data['files'] = fs
+    data['description'] = 'io.livecode.ch/learn/%s/%s' % (user, repo)
+    data['public'] = True
+    gist_create_url = 'https://api.github.com/gists'
+    r = requests.post(gist_create_url, json=data)
+    result = r.json()
+    return result['id']
+
+@app.route("/api/load/<user>/<repo>/<id>")
+def gist_load(user, repo, id):
+    gist_get_url = 'https://api.github.com/gists/%s' % id
+    r = requests.get(gist_get_url)
+    result = r.json()
+    fs = result['files']
+    data = {}
+    for k,v in fs.iteritems():
+        data[k] = v['content']
+    return jsonify(data)
+
 def snippet_cache(txt):
     key = hashlib.md5(txt.encode('utf-8')).hexdigest()
     fn = os.path.join(app.config['SNIPPET_TMP_DIR'], key)
