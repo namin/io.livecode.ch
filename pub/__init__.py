@@ -39,7 +39,7 @@ def dkr_check_img(img, git_url, refresh=False):
         redis.delete(img)
     if not refresh and c.images(img) != []:
         return {'status':0, 'out':'already installed'}
-    m = c.create_container(dkr_base_img(), 'git clone "%s" /home/runner/code' % git_url, user='runner')
+    m = c.create_container(dkr_base_img(), 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
     id = m['Id']
     c.start(id)
     s = c.wait(id)
