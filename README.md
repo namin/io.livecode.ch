@@ -92,7 +92,7 @@ These steps have been tested on a [DigitalOcean](https://www.digitalocean.com/?r
       * `sudo rm /etc/nginx/sites-enabled/default`
         
         (rationale: the default kicks in too easily)
-      * (when adding another domain (e.g. `dev.livecode.ch`), I had to comment out this line in `/etc/nginx/nginx.cong`: `server_names_hash_bucket_size 64;`)
+      * (when adding another domain (e.g. `dev.livecode.ch`), I had to comment out this line in `/etc/nginx/nginx.conf`: `server_names_hash_bucket_size 64;`)
     * set up dependencies
       * `sudo apt-get install uwsgi uwsgi-plugin-python`
       * `sudo apt-get install redis-server`
