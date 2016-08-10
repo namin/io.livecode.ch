@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="/static/livecode.css" type="text/css" />
 <script src="/static/lib/CodeMirror/lib/codemirror.js"></script>
 {% if language %}
-{% if language=='scala' %}
+{% if language in ['c','java','scala']  %}
 <script src="/static/lib/CodeMirror/mode/clike/clike.js"></script>
 {% else %}
 <script src="/static/lib/CodeMirror/mode/{{ language }}/{{ language }}.js"></script>
@@ -39,7 +39,7 @@ $(function() {
   function create_editor(id) {
     return CodeMirror.fromTextArea(document.getElementById(id), {
 {% if language %}
-      mode: {% if language=='scala' %}'text/x-scala'{% else %}'{{ language }}'{% endif %},
+      mode: {% if language in ['c','java','scala'] %}'text/x-{{ language }}'{% else %}'{{ language }}'{% endif %},
 {% endif %}
       tabMode: 'indent',
       lineNumbers: true
