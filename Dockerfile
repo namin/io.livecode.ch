@@ -72,6 +72,9 @@ RUN cd /code;\
     tar -xvf /code/scmutils/scmutils-20130901-x86-64-gnu-linux.tar.gz
 ADD dkr/software/mechanics-shell /usr/local/bin/mechanics-shell
 
+## Java ##
+RUN apt-get install -y openjdk-7-jdk
+
 ## user runner ##
 
 RUN apt-get install -y sudo
