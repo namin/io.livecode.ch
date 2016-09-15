@@ -17,11 +17,11 @@ def proxy_github_post(action, user, repo):
 
 @app.route("/api/run/<user>/<repo>", methods=['POST'])
 def proxy_github_run(user, repo):
-    return proxy_github('run', user, repo)
+    return proxy_github_post('run', user, repo)
 
 @app.route("/api/save/<user>/<repo>", methods=['POST'])
 def proxy_github_save(user, repo):
-    return proxy_github('save', user, repo)
+    return proxy_github_post('save', user, repo)
 
 @app.route("/api/load/<user>/<repo>/<id>")
 def proxy_gist_load(user, repo, id):
