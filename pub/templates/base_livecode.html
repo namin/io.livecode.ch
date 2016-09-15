@@ -111,7 +111,7 @@ $(function() {
     })
   });
 
-  if (window.location.hash) {
+  var get_data = function() {
     var id = window.location.hash.slice(1);
     $.get('/api/load/{{ user }}/{{ repo }}/'+id, function(data) {
       $.each(data, function (k,v) {
@@ -121,7 +121,11 @@ $(function() {
         }
       });
     })
+  };
+  if (window.location.hash) {
+    get_data();
   }
+  $(window).on('hashchange', get_data);
 });
 </script>
 
