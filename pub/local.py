@@ -1,19 +1,33 @@
 from flask import Flask
 from flask import request
 from flask import render_template
+from flask import jsonify
 import os
 import json
 import requests
 
 app = Flask(__name__)
 
-@app.route("/api/run/<user>/<repo>", methods=['POST'])
-def proxy_github_run(user, repo):
+def proxy_github_post(action, user, repo):
     data = {}
     for k,v in request.form.iteritems():
         data[k] = v
-    r = requests.post('http://%s/api/run/%s/%s' % (os.environ.get('REMOTE_SERVER_NAME', 'io.livecode.ch'), user, repo), data)
+    r = requests.post('http://%s/api/%s/%s/%s' % (os.environ.get('REMOTE_SERVER_NAME', 'io.livecode.ch'), action, user, repo), data)
     return r.text, r.status_code
+
+@app.route("/api/run/<user>/<repo>", methods=['POST'])
+def proxy_github_run(user, repo):
+    return proxy_github('run', user, repo)
+
+@app.route("/api/save/<user>/<repo>", methods=['POST'])
+def proxy_github_save(user, repo):
+    return proxy_github('save', user, repo)
+
+@app.route("/api/load/<user>/<repo>/<id>")
+def proxy_gist_load(user, repo, id):
+    r = requests.get('http://%s/api/load/%s/%s/%s' % (os.environ.get('REMOTE_SERVER_NAME', 'io.livecode.ch'), user, repo, id))
+    result = r.json()
+    return jsonify(result)
 
 @app.route('/')
 def local_index():
