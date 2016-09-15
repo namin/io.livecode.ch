@@ -119,7 +119,10 @@ $(function() {
         if (e) {
           e.setValue(v);
         }
-        $('#output-'+k).text('');
+        var o = $('#output-'+k);
+        if (o) {
+          o.text('');
+        }
       });
     })
   };
