@@ -7,6 +7,7 @@
 {% if language %}
 {% if language in ['c','java','scala']  %}
 <script src="/static/lib/CodeMirror/mode/clike/clike.js"></script>
+<script src=/static/lib/CodeMirror/mode/shell/shell.js></script>
 {% else %}
 <script src="/static/lib/CodeMirror/mode/{{ language }}/{{ language }}.js"></script>
 {% endif %}
@@ -36,11 +37,14 @@
 {% block body_extra %}
 <script>
 $(function() {
-  function create_editor(id) {
+  function create_editor(id, mode) {
+    {% if language %}
+    if (mode == undefined) {
+      mode = {% if language in ['c','java','scala'] %}'text/x-{{ language }}'{% else %}'{{ language }}'{% endif %}
+    }
+    {% endif %}
     return CodeMirror.fromTextArea(document.getElementById(id), {
-{% if language %}
-      mode: {% if language in ['c','java','scala'] %}'text/x-{{ language }}'{% else %}'{{ language }}'{% endif %},
-{% endif %}
+      mode: mode,
       tabMode: 'indent',
       lineNumbers: true
     });
@@ -50,6 +54,7 @@ $(function() {
   $('.live').each(function(index) {
     var id = $(this).attr('id');
     var libs = $(this).attr('data-lib');
+    var mode = $(this).attr('data-mode');
     var code_id = 'code-'+id;
     var check_id = 'check-'+id;
     var output_id = 'output-'+id;
@@ -60,7 +65,7 @@ $(function() {
     }
     $(this).text("");
     $(this).html("<textarea name="+code_id+" id="+code_id+">"+code+"</textarea><div><i id="+check_id+" class=\"fa fa-play-circle-o icon\"></i> <pre class=output id="+output_id+"></pre>"+extra+"</div>");
-    editors[id] = create_editor(code_id);
+    editors[id] = create_editor(code_id, mode);
     $('#'+check_id).click(function () {
       $('#'+check_id).addClass('running');
       var lib_txt = libs ? $.map(libs.split(' '), function(lib_id) {
