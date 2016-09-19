@@ -77,7 +77,7 @@ ADD dkr/software/mechanics-shell /usr/local/bin/mechanics-shell
 RUN add-apt-repository -y ppa:webupd8team/java
 RUN apt-get update
 
-RUN echo oracle-java6-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && apt-get install -y oracle-java8-installer
+RUN echo oracle-java6-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && apt-get install -y oracle-java6-installer
 
 RUN echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && apt-get install -y oracle-java7-installer
 
@@ -86,11 +86,15 @@ RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true 
 RUN echo oracle-java9-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && apt-get install -y oracle-java9-installer
 
 ## Scala ##
-RUN apt-get install -y scala
+# RUN apt-get install -y scala
 
 RUN  cd /code;\
      wget -nv http://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz;\
      tar -xzvf scala-2.11.8.tgz
+
+RUN  cd /code;\
+     wget -nv http://scala-lang.org/files/archive/scala-2.9.3.tgz;\
+     tar -xzvf scala-2.9.3.tgz
 
 ## user runner ##
 
