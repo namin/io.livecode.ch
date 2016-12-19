@@ -1,0 +1,11 @@
+#!/usr/bin/python
+import sys
+import logging
+logging.basicConfig(stream=sys.stderr)
+wsgi_root = "/var/www/dev.livecode.ch/"
+sys.path.insert(0,wsgi_root)
+
+import os
+os.environ['APP_SETTINGS'] = wsgi_root+"cfg/dev_prod.cfg"
+
+from pub import app as application

@@ -39,7 +39,7 @@ def dkr_check_img(img, git_url, refresh=False):
         redis.delete(img)
     if not refresh and c.images(img) != []:
         return {'status':0, 'out':'already installed'}
-    m = c.create_container(dkr_base_img(), 'git clone "%s" /home/runner/code' % git_url, user='runner')
+    m = c.create_container(dkr_base_img(), 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
     id = m['Id']
     c.start(id)
     s = c.wait(id)
@@ -128,9 +128,15 @@ def fetch_defaults(user, repo):
     return j_defaults
 
 @app.route("/repl/<user>/<repo>")
-def www_github_repl(user, repo):
+@app.route("/repl/<user>/<repo>/<path:content_url>")
+def www_github_repl(user, repo, content_url=''):
     j_defaults = fetch_defaults(user, repo)
-    return render_template('repl.html', user=user, repo=repo, language=j_defaults.get('language'))
+    content = ''
+    if content_url:
+        r_content = requests.get('http://'+content_url)
+        if r_content.status_code == 200:
+            content = r_content.text
+    return render_template('repl.html', user=user, repo=repo, content=content, language=j_defaults.get('language'))
 
 @app.route("/learn/<user>/<repo>")
 @app.route('/learn/<user>/<repo>/<subdir>')
@@ -163,6 +169,31 @@ def github_run(user, repo):
     if o_run['status']!=137:
         redis.hset(github_dkr_img(user, repo), '%s/%s/%s' % (key_main, key_pre, key_post), out)
     return out
+
+@app.route("/api/save/<user>/<repo>", methods=['POST'])
+def gist_save(user, repo):
+    fs = {}
+    for k,v in request.form.iteritems():
+        fs[k] = {'content': v}
+    data = {}
+    data['files'] = fs
+    data['description'] = 'io.livecode.ch/learn/%s/%s' % (user, repo)
+    data['public'] = True
+    gist_create_url = 'https://api.github.com/gists'
+    r = requests.post(gist_create_url, json=data)
+    result = r.json()
+    return result.get('id', '')
+
+@app.route("/api/load/<user>/<repo>/<id>")
+def gist_load(user, repo, id):
+    gist_get_url = 'https://api.github.com/gists/%s' % id
+    r = requests.get(gist_get_url)
+    result = r.json()
+    fs = result.get('files', {})
+    data = {}
+    for k,v in fs.iteritems():
+        data[k] = v['content']
+    return jsonify(data)
 
 def snippet_cache(txt):
     key = hashlib.md5(txt.encode('utf-8')).hexdigest()

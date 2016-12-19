@@ -5,7 +5,12 @@
 <link rel="stylesheet" href="/static/livecode.css" type="text/css" />
 <script src="/static/lib/CodeMirror/lib/codemirror.js"></script>
 {% if language %}
+{% if language in ['c','java','scala']  %}
+<script src="/static/lib/CodeMirror/mode/clike/clike.js"></script>
+<script src=/static/lib/CodeMirror/mode/shell/shell.js></script>
+{% else %}
 <script src="/static/lib/CodeMirror/mode/{{ language }}/{{ language }}.js"></script>
+{% endif %}
 {% endif %}
 <style type="text/css">
 .CodeMirror {
@@ -20,17 +25,26 @@
 {% endblock %}
 
 {% block body_top_extra %}
+
+{% block save %}
+<div class="save">
+</div>
+{% endblock %}
+
 <a href="https://github.com/{{user}}/{{repo}}"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
 {% endblock %}
 
 {% block body_extra %}
 <script>
 $(function() {
-  function create_editor(id) {
+  function create_editor(id, mode) {
+    {% if language %}
+    if (mode == undefined) {
+      mode = {% if language in ['c','java','scala'] %}'text/x-{{ language }}'{% else %}'{{ language }}'{% endif %}
+    }
+    {% endif %}
     return CodeMirror.fromTextArea(document.getElementById(id), {
-{% if language %}
-      mode: '{{ language }}',
-{% endif %}
+      mode: mode,
       tabMode: 'indent',
       lineNumbers: true
     });
@@ -40,6 +54,7 @@ $(function() {
   $('.live').each(function(index) {
     var id = $(this).attr('id');
     var libs = $(this).attr('data-lib');
+    var mode = $(this).attr('data-mode');
     var code_id = 'code-'+id;
     var check_id = 'check-'+id;
     var output_id = 'output-'+id;
@@ -50,7 +65,7 @@ $(function() {
     }
     $(this).text("");
     $(this).html("<textarea name="+code_id+" id="+code_id+">"+code+"</textarea><div><i id="+check_id+" class=\"fa fa-play-circle-o icon\"></i> <pre class=output id="+output_id+"></pre>"+extra+"</div>");
-    editors[id] = create_editor(code_id);
+    editors[id] = create_editor(code_id, mode);
     $('#'+check_id).click(function () {
       $('#'+check_id).addClass('running');
       var lib_txt = libs ? $.map(libs.split(' '), function(lib_id) {
@@ -81,8 +96,45 @@ $(function() {
       $('#'+check_id).addClass('hidden');
     }
   });
+
+  $('.save').each(function(i) {
+    var save_id = 'save-'+i;
+    $(this).append("<i id="+save_id+" class=\"fa fa-floppy-o icon\"></i> ");
+    $('#'+save_id).click(function () {
+      var fs = {};
+      $.each(editors, function (k,v) {
+        fs[k] = editors[k].getValue();
+      });
+      $.post('/api/save/{{ user }}/{{ repo }}', fs, function(data) {
+        window.location.hash = data;
+      })
+    })
+  });
+
+  var get_data = function() {
+    var id = window.location.hash.slice(1);
+    $.get('/api/load/{{ user }}/{{ repo }}/'+id, function(data) {
+      $.each(data, function (k,v) {
+        var e = editors[k];
+        if (e) {
+          e.setValue(v);
+        }
+        var o = $('#output-'+k);
+        if (o) {
+          o.text('');
+        }
+      });
+    })
+  };
+  if (window.location.hash) {
+    get_data();
+  }
+  $(window).on('hashchange', get_data);
 });
 </script>
+
+{{ self.save()|safe }}
+
 <div class="footer">
 powered by <a href="http://io.livecode.ch">io.livecode.ch</a>
 </div>

@@ -17,6 +17,11 @@
   width: 100%;
   border: 0;
 }
+.save {
+  text-align: right;
+  margin-bottom: 1em;
+}
+
 /* work-around android zoom focus */
 textarea:focus { font-size: 16px!important}
 .pseudocode { text-align: center; }
