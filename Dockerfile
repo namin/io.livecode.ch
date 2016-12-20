@@ -96,6 +96,9 @@ RUN  cd /code;\
      wget -nv http://scala-lang.org/files/archive/scala-2.9.3.tgz;\
      tar -xzvf scala-2.9.3.tgz
 
+## LaTeX ##
+RUN apt-get install -y texlive-latex-base texlive-latex-extra
+
 ## user runner ##
 
 RUN apt-get install -y sudo
