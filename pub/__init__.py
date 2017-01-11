@@ -75,7 +75,7 @@ def dkr_run(img, cmd, commit=None, timeout=5, c=None):
     return {'status':s, 'out':r}
 
 def github_dkr_img(user, repo):
-    return '%s/github.com/%s/%s' % (app.config['DKR_IMAGE_PREFIX'], user, repo)
+    return ('%s/github.com/%s/%s' % (app.config['DKR_IMAGE_PREFIX'], user, repo)).lower()
 
 def github_check_url(user, repo):
     return 'https://github.com/%s/%s' % (user, repo)
