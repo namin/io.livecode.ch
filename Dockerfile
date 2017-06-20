@@ -1,6 +1,6 @@
 # namin/io.livecode.ch
 
-FROM ubuntu:14.04
+FROM ubuntu:17.04
 MAINTAINER Nada Amin, namin@alum.mit.edu
 
 RUN \
@@ -10,6 +10,7 @@ RUN \
   apt-get install -y build-essential && \
   apt-get install -y software-properties-common
 
+RUN apt-get install locales
 RUN locale-gen en_US en_US.UTF-8
 
 RUN apt-get install -y curl wget
@@ -22,6 +23,7 @@ RUN mkdir /code
 # NOTE(namin): I disabled some installations from source, because they get killed.
 
 ### Scheme ###
+### Vicare ###
 #
 RUN apt-get install -y build-essential libtool autoconf libgmp-dev texinfo
 # --- killed ---
@@ -44,6 +46,19 @@ RUN cd /code;\
     unzip vicare-lib.zip -d /usr/local/lib/;\
     chmod 755 vicare;\
     cp vicare /usr/local/bin/
+### Chez ###
+RUN apt-get install -y libncurses-dev ncurses-dev libx11-dev
+# RUN cd /code;\
+#    wget -nv http://github.com/cisco/ChezScheme/archive/v9.4.zip;\
+#    unzip v9.4.zip -d .;\
+#    cd ChezScheme-9.4;\
+#    ./configure;\
+#    make install
+#### Install from binary ####
+RUN cd /usr/local/bin;\
+    wget -nv http://lampwww.epfl.ch/~amin/dkr/chez/scheme;\
+    wget -nv http://lampwww.epfl.ch/~amin/dkr/chez/petite.boot;\
+    wget -nv http://lampwww.epfl.ch/~amin/dkr/chez/scheme.boot
 
 ### ML ###
 RUN apt-get install -y mlton-compiler
@@ -97,7 +112,7 @@ RUN  cd /code;\
      tar -xzvf scala-2.9.3.tgz
 
 ## LaTeX ##
-RUN apt-get install -y texlive-latex-base texlive-latex-extra
+# RUN apt-get install -y texlive-latex-base texlive-latex-extra
 
 ## user runner ##
 
