@@ -92,13 +92,19 @@ RUN cd /code;\
 ADD dkr/software/mechanics-shell /usr/local/bin/mechanics-shell
 
 ## Java ##
-# RUN apt-get install -y openjdk-7-jdk
+##RUN apt-get install -y openjdk-6-jdk
+#RUN apt-get install -y openjdk-7-jdk
+#RUN apt-get install -y openjdk-8-jdk
 RUN add-apt-repository -y ppa:webupd8team/java
 RUN apt-get update
 
-RUN echo oracle-java6-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && apt-get install -y oracle-java6-installer
+#RUN echo "oracle-java6-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections;\
+#    echo "oracle-java6-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections;\
+#    apt-get install -y oracle-java6-installer
 
-RUN echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && apt-get install -y oracle-java7-installer
+#RUN echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
+#RUN echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
+#RUN apt-get install -y oracle-java7-installer
 
 RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && apt-get install -y oracle-java8-installer
 
