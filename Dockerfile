@@ -57,6 +57,10 @@ RUN apt-get install -y libncurses-dev ncurses-dev libx11-dev
 #### Install from binary ####
 RUN cd /usr/local/bin;\
     wget -nv http://lampwww.epfl.ch/~amin/dkr/chez/scheme;\
+    chmod 755 scheme;\
+    cd /usr/local/lib;\
+    mkdir -p csv9.4/a6le;\
+    cd csv9.4/a6le;\
     wget -nv http://lampwww.epfl.ch/~amin/dkr/chez/petite.boot;\
     wget -nv http://lampwww.epfl.ch/~amin/dkr/chez/scheme.boot
 
