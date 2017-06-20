@@ -117,9 +117,9 @@ RUN  cd /code;\
      wget -nv http://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz;\
      tar -xzvf scala-2.11.8.tgz
 
-RUN  cd /code;\
-     wget -nv http://scala-lang.org/files/archive/scala-2.9.3.tgz;\
-     tar -xzvf scala-2.9.3.tgz
+#RUN  cd /code;\
+#     wget -nv http://scala-lang.org/files/archive/scala-2.9.3.tgz;\
+#     tar -xzvf scala-2.9.3.tgz
 
 ## LaTeX ##
 # RUN apt-get install -y texlive-latex-base texlive-latex-extra
