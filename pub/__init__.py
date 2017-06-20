@@ -56,7 +56,7 @@ def dkr_run(img, cmd, commit=None, timeout=50, c=None):
                            user='runner',
                            environment={'HOME':'/home/runner'},
                            volumes=['/mnt/snippets'],
-                           network_disabled=True)
+                           network_disabled=False)
     id = m['Id']
     c.start(id, binds={app.config['SNIPPET_TMP_DIR']: { 'bind': '/mnt/snippets', 'ro': True }})
     s = c.wait(id)
@@ -167,7 +167,9 @@ def github_run(user, repo):
     o_run = dkr_run(github_dkr_img(user, repo), 'livecode-run %s %s %s' % (key_main, key_pre, key_post))
     out = o_run['out']
     if o_run['status']!=137:
-        redis.hset(github_dkr_img(user, repo), '%s/%s/%s' % (key_main, key_pre, key_post), out)
+        j_defaults = fetch_defaults(user, repo)
+        if j_defaults.get('cache', 'yes')!='no':
+            redis.hset(github_dkr_img(user, repo), '%s/%s/%s' % (key_main, key_pre, key_post), out)
     return out
 
 @app.route("/api/save/<user>/<repo>", methods=['POST'])

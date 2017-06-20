@@ -122,7 +122,7 @@ RUN  cd /code;\
 #     tar -xzvf scala-2.9.3.tgz
 
 ## LaTeX ##
-# RUN apt-get install -y texlive-latex-base texlive-latex-extra
+RUN apt-get install -y texlive-latex-base texlive-latex-extra
 
 ## user runner ##
 
