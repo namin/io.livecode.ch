@@ -176,7 +176,10 @@ def github_run(user, repo):
 def gist_save(user, repo):
     fs = {}
     for k,v in request.form.iteritems():
-        fs[k] = {'content': v}
+        c = v
+        if v=="":
+            c = " " # Github API does not like empty strings
+        fs[k] = {'content': c}
     data = {}
     data['files'] = fs
     data['description'] = 'io.livecode.ch/learn/%s/%s' % (user, repo)
