@@ -175,8 +175,17 @@ def github_run(user, repo):
 @app.route("/api/save/<user>/<repo>", methods=['POST'])
 def gist_save(user, repo):
     fs = {}
+    # Github API does not support empty content
+    # so we collect them separately...
+    es = []
     for k,v in request.form.iteritems():
-        fs[k] = {'content': v}
+        if v.strip()=="":
+          es.append(k)
+        else:
+          fs[k] = {'content': v}
+    ev = ",".join(es)
+    if ev!="":
+      fs['empty.txt'] = {'content':ev}
     data = {}
     data['files'] = fs
     data['description'] = 'io.livecode.ch/learn/%s/%s' % (user, repo)
@@ -194,7 +203,13 @@ def gist_load(user, repo, id):
     fs = result.get('files', {})
     data = {}
     for k,v in fs.iteritems():
-        data[k] = v['content']
+        if k=='empty.txt':
+            ev = v['content']
+            es = ev.split(',')
+            for e in es:
+                data[e] = ''
+        else:
+            data[k] = v['content']
     return jsonify(data)
 
 def snippet_cache(txt):
