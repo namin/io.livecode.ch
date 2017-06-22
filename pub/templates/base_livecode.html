@@ -36,6 +36,7 @@
 
 {% block body_extra %}
 <script>
+var editors = {};
 $(function() {
   function create_editor(id, mode) {
     {% if language %}
@@ -51,7 +52,6 @@ $(function() {
     });
   }
 
-  var editors = {}
   $('.live').each(function(index) {
     var id = $(this).attr('id');
     var libs = $(this).attr('data-lib');
@@ -78,6 +78,7 @@ $(function() {
           data = livecode_process_data(id, data);
         }
         $('#'+output_id).text(data);
+        $('#'+output_id).trigger('contentchanged');
         $('#'+check_id).removeClass('running');
       });
     })
