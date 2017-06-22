@@ -46,7 +46,8 @@ $(function() {
     return CodeMirror.fromTextArea(document.getElementById(id), {
       mode: mode,
       tabMode: 'indent',
-      lineNumbers: true
+      lineNumbers: true,
+      extraKeys: {Tab: false, "Shift-Tab": false}
     });
   }
 
