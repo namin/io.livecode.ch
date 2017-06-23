@@ -56,6 +56,7 @@ $(function() {
     var id = $(this).attr('id');
     var libs = $(this).attr('data-lib');
     var mode = $(this).attr('data-mode');
+    var editor_id = 'editor-'+id;
     var code_id = 'code-'+id;
     var check_id = 'check-'+id;
     var output_id = 'output-'+id;
@@ -65,7 +66,7 @@ $(function() {
       extra = livecode_html_extra(id);
     }
     $(this).text("");
-    $(this).html("<textarea name="+code_id+" id="+code_id+">"+code+"</textarea><div><i id="+check_id+" class=\"fa fa-play-circle-o icon\"></i> <pre class=output id="+output_id+"></pre>"+extra+"</div>");
+    $(this).html("<div id="+editor_id+"><textarea name="+code_id+" id="+code_id+">"+code+"</textarea></div><div><i id="+check_id+" class=\"fa fa-play-circle-o icon\"></i> <pre class=output id="+output_id+"></pre>"+extra+"</div>");
     editors[id] = create_editor(code_id, mode);
     $('#'+check_id).click(function () {
       $('#'+check_id).addClass('running');
