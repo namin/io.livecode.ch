@@ -86,9 +86,9 @@ RUN  cd /code;\
 RUN cd /code;\
     mkdir scmutils;\
     cd scmutils;\
-    wget -nv http://groups.csail.mit.edu/mac/users/gjs/6946/scmutils-tarballs/scmutils-20130901-x86-64-gnu-linux.tar.gz;\
+    wget -nv http://groups.csail.mit.edu/mac/users/gjs/6946/scmutils-tarballs/scmutils-20160827-x86-64-gnu-linux.tar.gz;\
     cd /usr/local;\
-    tar -xvf /code/scmutils/scmutils-20130901-x86-64-gnu-linux.tar.gz
+    tar -xvf /code/scmutils/scmutils-20160827-x86-64-gnu-linux.tar.gz
 ADD dkr/software/mechanics-shell /usr/local/bin/mechanics-shell
 
 ## Java ##
