@@ -233,4 +233,7 @@ def handle_page_not_found(e):
     return render_template('error_404.html', status=e), 404
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', threaded=True)
+    if app.config['DEBUG']:
+        app.run(debug=True)
+    else:
+        app.run(host='0.0.0.0', threaded=True)
