@@ -42,6 +42,8 @@ These steps have been tested on an Ubuntu derivative and Mac OS X.
   * **Or** build your own from the source repo
     * `cd $LIVECODE_DIR; docker build -t=namin/io.livecode.ch-dev .`
     * `export LIVECODE_CONFIG="dev_docker"`
+    
+* `export GITHUB_BOT_TOKEN="your_access_token"`
 
 * Run local development server
   * `export APP_SETTINGS=$LIVECODE_DIR/cfg/$LIVECODE_CONFIG.cfg`
@@ -110,6 +112,7 @@ These steps have been tested on a [DigitalOcean](https://www.digitalocean.com/?r
       * `cd io.livecode.ch`
       * `git submodule init; git submodule update`
       * `cp app.wsgi.sample app.wsgi`
+      * edit the app.wsgi to include the environment variable `GITHUB_BOT_TOKEN`
       * `cd cfg`
       * `sudo cp nginx-site.sample /etc/nginx/sites-available/io.livecode.ch`
       * `sudo ln -s /etc/nginx/sites-available/io.livecode.ch /etc/nginx/sites-enabled/io.livecode.ch`
