@@ -21,12 +21,15 @@ Test your .io.livecode.ch/_site locally
 Development server-side installation steps
 ------------------------------------------
 
-These steps have been tested on an Ubuntu derivative.
+These steps have been tested on an Ubuntu derivative and Mac OS X.
 
 * Install dependencies
-  * [Install docker](https://docs.docker.com/installation/ubuntulinux/).
-  * `sudo apt-get install redis-server python-pip git`
-  * `sudo pip install flask redis docker-py`
+  * Install docker for
+    for [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/) or
+    for [Mac OS X](https://hub.docker.com/editions/community/docker-ce-desktop-mac).
+  * Install dependencies (example from a clean slate Ubuntu)
+    * `sudo apt-get install redis-server python-pip git`
+    * `sudo pip install flask redis docker-py`
 
 * Set up local `io.livecode.ch` repository in a directory of your choice
   * `git clone --recursive https://github.com/namin/io.livecode.ch`
@@ -42,7 +45,7 @@ These steps have been tested on an Ubuntu derivative.
 
 * Run local development server
   * `export APP_SETTINGS=$LIVECODE_DIR/cfg/$LIVECODE_CONFIG.cfg`
-  * `cd $LIVECODE_DIR`
+  * `cd $LIVECODE_DIR/pub`
   * `python __init__.py`
 
 Production server-side installation steps
