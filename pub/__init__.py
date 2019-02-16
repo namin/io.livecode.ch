@@ -14,6 +14,7 @@ if 'DOCKER_HOST' not in app.config:
     app.config['DOCKER_HOST'] = os.environ.get('DOCKER_HOST', 'unix://var/run/docker.sock')
 if not os.path.exists(app.config['SNIPPET_TMP_DIR']):
     os.makedirs(app.config['SNIPPET_TMP_DIR'])
+github_bot_token = os.environ.get('GITHUB_BOT_TOKEN', None)
 
 from redis import Redis
 redis = Redis()
@@ -191,7 +192,8 @@ def gist_save(user, repo):
     data['description'] = 'io.livecode.ch/learn/%s/%s' % (user, repo)
     data['public'] = True
     gist_create_url = 'https://api.github.com/gists'
-    r = requests.post(gist_create_url, json=data)
+    auth = {'Authorization':'token ' + github_bot_token}
+    r = requests.post(gist_create_url, json=data, headers=auth)
     result = r.json()
     return result.get('id', '')
 
