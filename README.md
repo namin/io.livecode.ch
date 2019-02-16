@@ -67,7 +67,7 @@ These steps have been tested on a [DigitalOcean](https://www.digitalocean.com/?r
       * `export DKR=dkr`
     * `apt-get update`
     * `apt-get upgrade`
-    * `apt-get install lxc-docker`
+    * [Install docker.](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
     * `adduser $ME` 
     * `usermod -a -G www-data,docker,sudo $ME`
     * `usermod -a -G docker www-data`
@@ -76,7 +76,7 @@ These steps have been tested on a [DigitalOcean](https://www.digitalocean.com/?r
   * as `$ME`:
     * set up your favorite editor (and other tools) as you please. I do:
       * set up emacs
-        * `sudo apt-get install emacs24`
+        * `sudo apt-get install emacs`
         * `git clone -b server https://github.com/namin/.emacs.d.git`
            
            (in `$HOME` directory)
@@ -100,7 +100,7 @@ These steps have been tested on a [DigitalOcean](https://www.digitalocean.com/?r
       * `sudo pip install flask redis docker-py`
     * set up website
       * `cd /var`
-      * `sudo mkdir www`
+      * `sudo mkdir -p www`
       * `sudo chown www-data:www-data www`
       * `sudo chmod g+w www`
       * `cd www`
