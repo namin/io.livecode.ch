@@ -1,7 +1,7 @@
 [io.livecode.ch](http://io.livecode.ch)
 ===============
 
-[io.livecode.ch](http://io.livecode.ch) is an _early stage prototype_
+[io.livecode.ch](http://io.livecode.ch) is a prototype
 for turning code repositories into interactive tutorials and books,
 with code snippets that can be edited and run on the web.
 
