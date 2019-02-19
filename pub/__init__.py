@@ -85,14 +85,14 @@ def github_git_url(user, repo):
     return 'https://github.com/%s/%s.git' % (user, repo)
 
 def github_defaults_url(user, repo):
-    return 'https://raw.github.com/%s/%s/master/.io.livecode.ch/defaults.json' % (user, repo)
+    return 'https://raw.githubusercontent.com/%s/%s/master/.io.livecode.ch/defaults.json' % (user, repo)
 
 def github_site_index_url(user, repo, subdir):
     if subdir:
         subdir += '/'
     else:
         subdir = ""
-    return 'https://raw.github.com/%s/%s/master/.io.livecode.ch/_site/%sindex.html' % (user, repo, subdir)
+    return 'https://raw.githubusercontent.com/%s/%s/master/.io.livecode.ch/_site/%sindex.html' % (user, repo, subdir)
 
 def github_site_index_src_link(user, repo):
     return 'https://github.com/%s/%s/tree/master/.io.livecode.ch/_site/index.html' % (user, repo)
