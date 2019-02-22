@@ -74,7 +74,7 @@ $(function() {
         return editors[lib_id].getValue();
       }).join('\n') : '';
       var app_txt = editors[id].getValue();
-      $.post('/api/run/{{ user }}/{{ repo }}', {'pre':lib_txt, 'main':app_txt, 'post':''}, function (data) {
+      $.post('/api/run/{{ user }}/{{ repo }}'+window.location.search, {'pre':lib_txt, 'main':app_txt, 'post':''}, function (data) {
         if (typeof livecode_process_data != "undefined") {
           data = livecode_process_data(id, data);
         }
@@ -108,7 +108,7 @@ $(function() {
       $.each(editors, function (k,v) {
         fs[k] = editors[k].getValue();
       });
-      $.post('/api/save/{{ user }}/{{ repo }}', fs, function(data) {
+      $.post('/api/save/{{ user }}/{{ repo }}'+window.location.search, fs, function(data) {
         window.location.hash = data;
       })
     })

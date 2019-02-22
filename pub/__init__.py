@@ -160,7 +160,11 @@ def www_github_learn(user, repo, subdir=None):
 
 @app.route("/api/run/<user>/<repo>", methods=['POST'])
 def github_run(user, repo):
-    o = dkr_check_img(github_dkr_img(user, repo), github_git_url(user, repo), user=user, repo=repo)
+    suffix = request.args.get('img', None)
+    img = github_dkr_img(user, repo)
+    if suffix:
+        img += '-'+suffix
+    o = dkr_check_img(img, github_git_url(user, repo), suffix=suffix, user=user, repo=repo)
     if o['status']!=0:
         return 'installation error\n%s' % o.out, 500
     input_main = request.form['main']
@@ -169,10 +173,10 @@ def github_run(user, repo):
     key_main = snippet_cache(input_main)
     key_pre = snippet_cache(input_pre)
     key_post = snippet_cache(input_post)
-    cache = redis.hget(github_dkr_img(user, repo), '%s/%s/%s' % (key_main, key_pre, key_post))
+    cache = redis.hget(img, '%s/%s/%s' % (key_main, key_pre, key_post))
     if cache:
         return cache
-    o_run = dkr_run(github_dkr_img(user, repo), 'livecode-run %s %s %s' % (key_main, key_pre, key_post))
+    o_run = dkr_run(img, 'livecode-run %s %s %s' % (key_main, key_pre, key_post))
     out = o_run['out']
     if o_run['status']!=137:
         j_defaults = fetch_defaults(user, repo)
