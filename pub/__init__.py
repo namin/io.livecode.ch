@@ -34,13 +34,20 @@ def dkr_client():
                          version='1.13',
                          timeout=10)
 
-def dkr_check_img(img, git_url, refresh=False):
+def dkr_check_img(img, git_url, refresh=False, suffix=None, user=None, repo=None):
     c = dkr_client()
     if refresh:
         redis.delete(img)
     if not refresh and c.images(img) != []:
         return {'status':0, 'out':'already installed'}
-    m = c.create_container(dkr_base_img(), 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
+    if suffix is None:
+        if user and repo:
+            suffix = fetch_defaults(user, repo).get('image', '')
+        else:
+            suffix = '' # should not really happen...
+    if suffix != "":
+        suffix = "-"+suffix
+    m = c.create_container(dkr_base_img()+suffix, 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
     id = m['Id']
     c.start(id)
     s = c.wait(id)
@@ -123,7 +130,7 @@ def fetch_defaults(user, repo):
         j_defaults = r_defaults.json()
     except ValueError as e:
         raise UserError(user, repo, ctx='while parsing <code>defaults.json</code>', err=str(e))
-    o = dkr_check_img(github_dkr_img(user, repo), github_git_url(user, repo), refresh=request.args.get('refresh', False))
+    o = dkr_check_img(github_dkr_img(user, repo), github_git_url(user, repo), refresh=request.args.get('refresh', False), suffix=j_defaults.get('image', ''))
     if o['status']!=0:
         raise UserError(user, repo, ctx='while installing', err=o['out'])
     return j_defaults
@@ -153,7 +160,7 @@ def www_github_learn(user, repo, subdir=None):
 
 @app.route("/api/run/<user>/<repo>", methods=['POST'])
 def github_run(user, repo):
-    o = dkr_check_img(github_dkr_img(user, repo), github_git_url(user, repo))
+    o = dkr_check_img(github_dkr_img(user, repo), github_git_url(user, repo), user=user, repo=repo)
     if o['status']!=0:
         return 'installation error\n%s' % o.out, 500
     input_main = request.form['main']
