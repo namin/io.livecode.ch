@@ -15,6 +15,7 @@ if 'DOCKER_HOST' not in app.config:
 if not os.path.exists(app.config['SNIPPET_TMP_DIR']):
     os.makedirs(app.config['SNIPPET_TMP_DIR'])
 github_bot_token = os.environ.get('GITHUB_BOT_TOKEN', None)
+auth = {'Authorization':'token ' + github_bot_token}
 
 from redis import Redis
 redis = Redis()
@@ -116,9 +117,9 @@ def handle_user_error(e):
     return render_template(e.template_file, user=e.user, repo=e.repo, status=e.status_code, ctx=e.ctx, err=e.err, subdir=e.subdir), e.status_code
 
 def fetch_defaults(user, repo):
-    r_defaults = requests.get(github_defaults_url(user, repo))
+    r_defaults = requests.get(github_defaults_url(user, repo), headers=auth)
     if r_defaults.status_code != 200:
-        r_check = requests.get(github_check_url(user, repo))
+        r_check = requests.get(github_check_url(user, repo), headers=auth)
         if r_check.status_code != 200:
             raise UserError(user, repo, 'error_repo_not_found.html', r_check.status_code)
         else:
@@ -139,7 +140,7 @@ def www_github_repl(user, repo, content_url=''):
     j_defaults = fetch_defaults(user, repo)
     content = ''
     if content_url:
-        r_content = requests.get('http://'+content_url)
+        r_content = requests.get('http://'+content_url, headers=auth)
         if r_content.status_code == 200:
             content = r_content.text
     return render_template('repl.html', user=user, repo=repo, content=content, language=j_defaults.get('language'))
@@ -148,7 +149,7 @@ def www_github_repl(user, repo, content_url=''):
 @app.route('/learn/<user>/<repo>/<subdir>')
 def www_github_learn(user, repo, subdir=None):
     j_defaults = fetch_defaults(user, repo)
-    r_index = requests.get(github_site_index_url(user, repo, subdir))
+    r_index = requests.get(github_site_index_url(user, repo, subdir), headers=auth)
     if r_index.status_code != 200:
         raise UserError(user, repo, 'error_site_not_found.html', r_index.status_code, subdir=subdir)
     try:
@@ -199,7 +200,6 @@ def gist_save(user, repo):
     data['description'] = 'io.livecode.ch/learn/%s/%s' % (user, repo)
     data['public'] = True
     gist_create_url = 'https://api.github.com/gists'
-    auth = {'Authorization':'token ' + github_bot_token}
     r = requests.post(gist_create_url, json=data, headers=auth)
     result = r.json()
     return result.get('id', '')
@@ -207,7 +207,7 @@ def gist_save(user, repo):
 @app.route("/api/load/<user>/<repo>/<id>")
 def gist_load(user, repo, id):
     gist_get_url = 'https://api.github.com/gists/%s' % id
-    r = requests.get(gist_get_url)
+    r = requests.get(gist_get_url, headers=auth)
     result = r.json()
     fs = result.get('files', {})
     data = {}
