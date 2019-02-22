@@ -82,7 +82,9 @@ def dkr_run(img, cmd, commit=None, timeout=10, c=None):
 def github_dkr_img(user, repo, suffix):
     if suffix is None:
         suffix = ""
-    return ('%s/github.com/%s/%s/%s' % (app.config['DKR_IMAGE_PREFIX'], user, repo, suffix)).lower()
+    else:
+        suffix = "/"+suffix
+    return ('%s/github.com/%s/%s%s' % (app.config['DKR_IMAGE_PREFIX'], user, repo, suffix)).lower()
 
 def github_check_url(user, repo):
     return 'https://github.com/%s/%s' % (user, repo)
