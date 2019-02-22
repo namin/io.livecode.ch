@@ -40,12 +40,7 @@ def dkr_check_img(img, git_url, refresh=False, suffix=None, user=None, repo=None
         redis.delete(img)
     if not refresh and c.images(img) != []:
         return {'status':0, 'out':'already installed'}
-    if suffix is None:
-        if user and repo:
-            suffix = fetch_defaults(user, repo).get('image', '')
-        else:
-            suffix = '' # should not really happen...
-    if suffix != "":
+    if suffix is not None:
         suffix = "-"+suffix
     m = c.create_container(dkr_base_img()+suffix, 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
     id = m['Id']
@@ -82,8 +77,10 @@ def dkr_run(img, cmd, commit=None, timeout=10, c=None):
         c.commit(id, repository=commit)
     return {'status':s, 'out':r}
 
-def github_dkr_img(user, repo):
-    return ('%s/github.com/%s/%s' % (app.config['DKR_IMAGE_PREFIX'], user, repo)).lower()
+def github_dkr_img(user, repo, suffix):
+    if suffix is None:
+        suffix = ""
+    return ('%s/github.com/%s/%s/%s' % (app.config['DKR_IMAGE_PREFIX'], user, repo, suffix)).lower()
 
 def github_check_url(user, repo):
     return 'https://github.com/%s/%s' % (user, repo)
@@ -130,7 +127,8 @@ def fetch_defaults(user, repo):
         j_defaults = r_defaults.json()
     except ValueError as e:
         raise UserError(user, repo, ctx='while parsing <code>defaults.json</code>', err=str(e))
-    o = dkr_check_img(github_dkr_img(user, repo), github_git_url(user, repo), refresh=request.args.get('refresh', False), suffix=j_defaults.get('image', ''))
+    suffix = request.args.get('img', None)
+    o = dkr_check_img(github_dkr_img(user, repo, suffix), github_git_url(user, repo), refresh=request.args.get('refresh', False), suffix=suffix)
     if o['status']!=0:
         raise UserError(user, repo, ctx='while installing', err=o['out'])
     return j_defaults
@@ -161,9 +159,7 @@ def www_github_learn(user, repo, subdir=None):
 @app.route("/api/run/<user>/<repo>", methods=['POST'])
 def github_run(user, repo):
     suffix = request.args.get('img', None)
-    img = github_dkr_img(user, repo)
-    if suffix:
-        img += '-'+suffix
+    img = github_dkr_img(user, repo, request.args.get('img', None))
     o = dkr_check_img(img, github_git_url(user, repo), suffix=suffix, user=user, repo=repo)
     if o['status']!=0:
         return 'installation error\n%s' % o.out, 500
@@ -181,7 +177,7 @@ def github_run(user, repo):
     if o_run['status']!=137:
         j_defaults = fetch_defaults(user, repo)
         if j_defaults.get('cache', 'yes')!='no':
-            redis.hset(github_dkr_img(user, repo), '%s/%s/%s' % (key_main, key_pre, key_post), out)
+            redis.hset(img, '%s/%s/%s' % (key_main, key_pre, key_post), out)
     return out
 
 @app.route("/api/save/<user>/<repo>", methods=['POST'])
