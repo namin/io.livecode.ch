@@ -43,7 +43,10 @@ def dkr_check_img(img, git_url, refresh=False, suffix="", user=None, repo=None):
         return {'status':0, 'out':'already installed'}
     if suffix != "":
         suffix = "-"+suffix
-    m = c.create_container(dkr_base_img()+suffix, 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
+    base_image = dkr_base_img()+suffix
+    if c.images(base_image) == []:
+        return {'status':1, 'out':'base image %s does not exists' % base_image}
+    m = c.create_container(base_image, 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
     id = m['Id']
     c.start(id)
     s = c.wait(id)
