@@ -154,6 +154,10 @@ RUN apt-get install -y racket
 RUN apt-get install -y z3
 RUN apt-get install -y cvc4
 
+## OCaml ##
+
+RUN apt-get install -y ocaml-nox
+
 ## user runner ##
 
 RUN apt-get install -y sudo
