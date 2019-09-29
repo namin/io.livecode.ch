@@ -158,6 +158,10 @@ RUN apt-get install -y cvc4
 
 RUN apt-get install -y ocaml-nox
 
+## SBCL (Common Lisp) ##
+
+RUN apt-get install -y sbcl
+
 ## user runner ##
 
 RUN apt-get install -y sudo
