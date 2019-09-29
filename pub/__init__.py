@@ -15,7 +15,7 @@ if 'DOCKER_HOST' not in app.config:
 if not os.path.exists(app.config['SNIPPET_TMP_DIR']):
     os.makedirs(app.config['SNIPPET_TMP_DIR'])
 github_bot_token = os.environ.get('GITHUB_BOT_TOKEN', None)
-auth = {'Authorization':'token ' + github_bot_token}
+github_headers = {'Authorization':'token ' + github_bot_token, 'Accept': 'application/vnd.github.v3+json'}
 
 from redis import Redis
 redis = Redis()
@@ -26,6 +26,8 @@ import hashlib
 import re
 
 import requests
+import base64
+import json
 
 def dkr_base_img():
     return app.config['DKR_BASE_IMAGE']
@@ -93,14 +95,17 @@ def github_git_url(user, repo):
     return 'https://github.com/%s/%s.git' % (user, repo)
 
 def github_defaults_url(user, repo):
-    return 'https://raw.githubusercontent.com/%s/%s/master/.io.livecode.ch/defaults.json' % (user, repo)
+    return 'https://api.github.com/repos/%s/%s/contents/.io.livecode.ch/defaults.json' % (user, repo)
 
 def github_site_index_url(user, repo, subdir):
     if subdir:
         subdir += '/'
     else:
         subdir = ""
-    return 'https://raw.githubusercontent.com/%s/%s/master/.io.livecode.ch/_site/%sindex.html' % (user, repo, subdir)
+    return 'https://api.github.com/repos/%s/%s/contents/.io.livecode.ch/_site/%sindex.html' % (user, repo, subdir)
+
+def github_content(r):
+    return base64.b64decode(r.json()['content'])
 
 def github_site_index_src_link(user, repo):
     return 'https://github.com/%s/%s/tree/master/.io.livecode.ch/_site/index.html' % (user, repo)
@@ -120,15 +125,15 @@ def handle_user_error(e):
     return render_template(e.template_file, user=e.user, repo=e.repo, status=e.status_code, ctx=e.ctx, err=e.err, subdir=e.subdir), e.status_code
 
 def fetch_defaults(user, repo):
-    r_defaults = requests.get(github_defaults_url(user, repo), headers=auth)
+    r_defaults = requests.get(github_defaults_url(user, repo), headers=github_headers)
     if r_defaults.status_code != 200:
-        r_check = requests.get(github_check_url(user, repo), headers=auth)
+        r_check = requests.get(github_check_url(user, repo))
         if r_check.status_code != 200:
             raise UserError(user, repo, 'error_repo_not_found.html', r_check.status_code)
         else:
             raise UserError(user, repo, 'error_livecode_not_found.html', r_defaults.status_code)
     try:
-        j_defaults = r_defaults.json()
+        j_defaults = json.loads(github_content(r_defaults))
     except ValueError as e:
         raise UserError(user, repo, ctx='while parsing <code>defaults.json</code>', err=str(e))
     suffix = request.args.get('img', "")
@@ -143,7 +148,7 @@ def www_github_repl(user, repo, content_url=''):
     j_defaults = fetch_defaults(user, repo)
     content = ''
     if content_url:
-        r_content = requests.get('http://'+content_url, headers=auth)
+        r_content = requests.get('http://'+content_url)
         if r_content.status_code == 200:
             content = r_content.text
     return render_template('repl.html', user=user, repo=repo, content=content, language=j_defaults.get('language'))
@@ -152,11 +157,11 @@ def www_github_repl(user, repo, content_url=''):
 @app.route('/learn/<user>/<repo>/<subdir>')
 def www_github_learn(user, repo, subdir=None):
     j_defaults = fetch_defaults(user, repo)
-    r_index = requests.get(github_site_index_url(user, repo, subdir), headers=auth)
+    r_index = requests.get(github_site_index_url(user, repo, subdir), headers=github_headers)
     if r_index.status_code != 200:
         raise UserError(user, repo, 'error_site_not_found.html', r_index.status_code, subdir=subdir)
     try:
-        return render_template_string(r_index.text, user=user, repo=repo, language=j_defaults.get('language'))
+        return render_template_string(github_content(r_index), user=user, repo=repo, language=j_defaults.get('language'))
     except TemplateSyntaxError as e:
         raise UserError(user, repo, ctx='while rendering <a href="%s">the site index</a>' % github_site_index_src_link(user, repo), err=str(e))
 
@@ -203,14 +208,14 @@ def gist_save(user, repo):
     data['description'] = 'io.livecode.ch/learn/%s/%s' % (user, repo)
     data['public'] = True
     gist_create_url = 'https://api.github.com/gists'
-    r = requests.post(gist_create_url, json=data, headers=auth)
+    r = requests.post(gist_create_url, json=data, headers=github_headers)
     result = r.json()
     return result.get('id', '')
 
 @app.route("/api/load/<user>/<repo>/<id>")
 def gist_load(user, repo, id):
     gist_get_url = 'https://api.github.com/gists/%s' % id
-    r = requests.get(gist_get_url, headers=auth)
+    r = requests.get(gist_get_url, headers=github_headers)
     result = r.json()
     fs = result.get('files', {})
     data = {}
