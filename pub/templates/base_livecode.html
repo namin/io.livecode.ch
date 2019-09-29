@@ -9,7 +9,9 @@
 <script src="/static/lib/CodeMirror/mode/clike/clike.js"></script>
 <script src=/static/lib/CodeMirror/mode/shell/shell.js></script>
 {% else %}
+{% if language != 'null' %}
 <script src="/static/lib/CodeMirror/mode/{{ language }}/{{ language }}.js"></script>
+{% endif %}
 {% endif %}
 {% endif %}
 <style type="text/css">
