@@ -105,7 +105,7 @@ def github_site_index_url(user, repo, subdir):
     return 'https://api.github.com/repos/%s/%s/contents/.io.livecode.ch/_site/%sindex.html' % (user, repo, subdir)
 
 def github_content(r):
-    return base64.b64decode(r.json()['content'])
+    return base64.b64decode(r.json()['content']).decode('utf-8')
 
 def github_site_index_src_link(user, repo):
     return 'https://github.com/%s/%s/tree/master/.io.livecode.ch/_site/index.html' % (user, repo)
