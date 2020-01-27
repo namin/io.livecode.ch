@@ -60,9 +60,9 @@ These steps have been tested on a [DigitalOcean](https://www.digitalocean.com/?r
   * for the other options, select as you please. My options:
     * for the size, I use the second smallest droplet, though any other including the smallest should work too.
     * for the last settings, I keep the default VirtIO enabled (I have not tested it disabled).
-      I also like to enable Backups, though it's not essential.
 
 * Initial setup of the server
+  * [Instructions to install Docker](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04)
   * `$ME` refers to your preferred username (e.g. `namin` for me)
   * `$DKR` refers to a docker-enabled user (e.g. `dkr`, which I use for scheduling docker cleanups)
   * as `root`:
