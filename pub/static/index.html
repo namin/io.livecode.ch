@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>REPL</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<link rel="icon" href="images/favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Libre+Baskerville&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="styles/lib/normalize.css">
+		<link rel="stylesheet" href="styles/lib/milligram.min.css">
+		<link rel="stylesheet" href="styles/main.css">
+
+    <style>
+      body {
+      font-family: 'Libre Baskerville', serif;
+      }
+      .user, .server {
+        padding: 0.2em;
+      }
+      .server {
+        background-color: #eee;
+      }
+    </style>
+  </head>
+	<body>
+
+    <main class="wrapper">
+			<section class="container" id="chatty">
+				<h1 class="title">REPL</h1>
+
+        <form id="msg_form">
+          <fieldset>
+            <input type="text" id="msg">
+          </fieldset>
+        </form>
+
+        <h2 class="title">Log</h2>
+        <div id=log>
+        </div>
+
+      </section>
+
+    </main>
+
+    <script>
+      var server_replies = function(msg) {
+        log("You said <em>"+msg+"</em>", "server");
+        /*
+        $.ajax({
+          url: '/server',
+          type: 'POST',
+          data: 'msg='+msg,
+          success: function(data) {
+            log(data, "server");
+          },
+          error: function(e) {
+            console.log(e);
+            log("error: "+e.message, "server");
+          }
+        });
+        */
+      };
+      var log = function(msg, user) {
+        $("#log").append("<div class="+user+">"+msg+"</div>");
+      }
+      $( "#msg_form" ).submit(function( event ) {
+        var msg = $("#msg").val();
+        log(msg, "user");
+        event.preventDefault();
+        $("#msg").val("");
+        server_replies(msg);
+      });
+    </script>
+
+	</body>
+</html>
