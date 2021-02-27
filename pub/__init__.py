@@ -35,7 +35,7 @@ def dkr_base_img():
 def dkr_client():
     return docker.Client(base_url=app.config['DOCKER_HOST'],
                          version='1.13',
-                         timeout=10)
+                         timeout=1000)
 
 def dkr_check_img(img, git_url, refresh=False, suffix="", user=None, repo=None):
     c = dkr_client()
@@ -55,9 +55,9 @@ def dkr_check_img(img, git_url, refresh=False, suffix="", user=None, repo=None):
     if s!=0:
         return {'status':s, 'out':'error cloning repository %s' % git_url}
     c.commit(id, img)
-    return dkr_run(img, 'livecode-install', img, c=c)
+    return dkr_run(img, 'livecode-install', img, c=c, timeout=10000)
 
-def dkr_run(img, cmd, commit=None, timeout=10, c=None):
+def dkr_run(img, cmd, commit=None, timeout=1000, c=None):
     c = c or dkr_client()
     r = ""
     m = c.create_container(img,
@@ -183,7 +183,7 @@ def github_run(user, repo):
         return cache
     o_run = dkr_run(img, 'livecode-run %s %s %s' % (key_main, key_pre, key_post))
     out = o_run['out']
-    if o_run['status']!=137:
+    if o_run['status']!=137 and o_run['status']!=1:
         j_defaults = fetch_defaults(user, repo)
         if j_defaults.get('cache', 'yes')!='no':
             redis.hset(img, '%s/%s/%s' % (key_main, key_pre, key_post), out)
