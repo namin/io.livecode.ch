@@ -10,8 +10,6 @@ import os
 
 app = Flask(__name__)
 app.config.from_envvar('APP_SETTINGS')
-if 'DOCKER_HOST' not in app.config:
-    app.config['DOCKER_HOST'] = os.environ.get('DOCKER_HOST', 'unix://var/run/docker.sock')
 if not os.path.exists(app.config['SNIPPET_TMP_DIR']):
     os.makedirs(app.config['SNIPPET_TMP_DIR'])
 github_bot_token = os.environ.get('GITHUB_BOT_TOKEN', None)
@@ -33,42 +31,46 @@ def dkr_base_img():
     return app.config['DKR_BASE_IMAGE']
 
 def dkr_client():
-    return docker.Client(base_url=app.config['DOCKER_HOST'],
-                         version='1.13',
-                         timeout=1000)
+    return docker.from_env()
+
+def dkr_already_installed(img, c=None):
+    c = c or dkr_client()
+    try:
+        c.images.get(img)
+    except docker.errors.ImageNotFound:
+        return False
+    return True
 
 def dkr_check_img(img, git_url, refresh=False, suffix="", user=None, repo=None):
     c = dkr_client()
     if refresh:
         redis.delete(img)
-    if not refresh and c.images(img) != []:
+    if not refresh and dkr_already_installed(img, c):
         return {'status':0, 'out':'already installed'}
     if suffix != "":
         suffix = "-"+suffix
     base_image = dkr_base_img()+suffix
     if c.images(base_image) == []:
         return {'status':1, 'out':'base image %s does not exists' % base_image}
-    m = c.create_container(base_image, 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
-    id = m['Id']
-    c.start(id)
-    s = c.wait(id)
+    m = c.container.create(base_image, 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
+    m.start()
+    s = c.wait()
     if s!=0:
         return {'status':s, 'out':'error cloning repository %s' % git_url}
-    c.commit(id, img)
+    m.commit(img)
     return dkr_run(img, 'livecode-install', img, c=c, timeout=10000)
 
 def dkr_run(img, cmd, commit=None, timeout=1000, c=None):
     c = c or dkr_client()
     r = ""
-    m = c.create_container(img,
-                           "timeout %d %s" % (timeout, cmd),
-                           user='runner',
-                           environment={'HOME':'/home/runner'},
-                           volumes=['/mnt/snippets'],
-                           network_disabled=False)
-    id = m['Id']
-    c.start(id, binds={app.config['SNIPPET_TMP_DIR']: { 'bind': '/mnt/snippets', 'ro': True }})
-    s = c.wait(id)
+    m = c.containers.create(img,
+                            "timeout %d %s" % (timeout, cmd),
+                            user='runner',
+                            environment={'HOME':'/home/runner'},
+                            volumes={app.config['SNIPPET_TMP_DIR']: {'bind': '/mnt/snippets', 'mode':'ro'}},
+                            network_disabled=False)
+    m.start()
+    s = m.wait()['StatusCode']
     if s!=0:
         r += "error: (%d)\n" % s
     if s==137:
@@ -78,7 +80,7 @@ def dkr_run(img, cmd, commit=None, timeout=1000, c=None):
     elif s==124:
         r += "inifinite loop!"
     else:
-        r += c.logs(id)
+        r += m.logs().decode('utf-8')
     if commit:
         c.commit(id, repository=commit)
     return {'status':s, 'out':r}
