@@ -50,11 +50,13 @@ def dkr_check_img(img, git_url, refresh=False, suffix="", user=None, repo=None):
     if suffix != "":
         suffix = "-"+suffix
     base_image = dkr_base_img()+suffix
-    if c.images(base_image) == []:
+    try:
+        c.images.get(base_image)
+    except docker.errors.ImageNotFound:
         return {'status':1, 'out':'base image %s does not exists' % base_image}
-    m = c.container.create(base_image, 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
+    m = c.containers.create(base_image, 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
     m.start()
-    s = c.wait()
+    s = m.wait()['StatusCode']
     if s!=0:
         return {'status':s, 'out':'error cloning repository %s' % git_url}
     m.commit(img)
@@ -82,7 +84,7 @@ def dkr_run(img, cmd, commit=None, timeout=1000, c=None):
     else:
         r += m.logs().decode('utf-8')
     if commit:
-        c.commit(id, repository=commit)
+        m.commit(repository=commit)
     return {'status':s, 'out':r}
 
 def github_dkr_img(user, repo, suffix):
