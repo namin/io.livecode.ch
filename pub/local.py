@@ -12,7 +12,7 @@ def proxy_github_post(action, user, repo):
     data = {}
     for k,v in request.form.iteritems():
         data[k] = v
-    r = requests.post('http://%s/api/%s/%s/%s' % (os.environ.get('REMOTE_SERVER_NAME', 'io.livecode.ch'), action, user, repo), data)
+    r = requests.post('https://%s/api/%s/%s/%s' % (os.environ.get('REMOTE_SERVER_NAME', 'io.livecode.ch'), action, user, repo), data)
     return r.text, r.status_code
 
 @app.route("/api/run/<user>/<repo>", methods=['POST'])
