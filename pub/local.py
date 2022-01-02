@@ -15,6 +15,12 @@ def proxy_github_post(action, user, repo):
     r = requests.post('https://%s/api/%s/%s/%s' % (os.environ.get('REMOTE_SERVER_NAME', 'io.livecode.ch'), action, user, repo), data)
     return r.text, r.status_code
 
+@app.route("/api/run", methods=['GET','POST'])
+def proxy_github_run0():
+    user = request.values['user']
+    repo = request.values['repo']
+    return proxy_github_post('run', user, repo)
+
 @app.route("/api/run/<user>/<repo>", methods=['GET','POST'])
 def proxy_github_run(user, repo):
     return proxy_github_post('run', user, repo)
