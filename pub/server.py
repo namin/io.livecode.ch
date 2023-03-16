@@ -8,10 +8,16 @@ from jinja2.exceptions import TemplateSyntaxError
 
 import os
 
+import cfg
+DEBUG = False
+SERVER_NAME = 'io.livecode.ch'
+DKR_BASE_IMAGE = 'namin/io.livecode.ch'
+DKR_IMAGE_PREFIX = 'namin/io.livecode.ch'#'temp/io.livecode.ch'
+SNIPPET_TMP_DIR = '/tmp/snippets'
+
 app = Flask(__name__)
-app.config.from_envvar('APP_SETTINGS')
-if not os.path.exists(app.config['SNIPPET_TMP_DIR']):
-    os.makedirs(app.config['SNIPPET_TMP_DIR'])
+if not os.path.exists(SNIPPET_TMP_DIR):
+    os.makedirs(SNIPPET_TMP_DIR)
 github_bot_token = os.environ.get('GITHUB_BOT_TOKEN', None)
 github_headers = {'Authorization':'token ' + github_bot_token, 'Accept': 'application/vnd.github.v3+json'}
 
@@ -28,7 +34,7 @@ import base64
 import json
 
 def dkr_base_img():
-    return app.config['DKR_BASE_IMAGE']
+    return DKR_BASE_IMAGE
 
 def dkr_client():
     return docker.from_env()
@@ -69,7 +75,7 @@ def dkr_run(img, cmd, commit=None, timeout=1000, c=None):
                             "timeout %d %s" % (timeout, cmd),
                             user='runner',
                             environment={'HOME':'/home/runner'},
-                            volumes={app.config['SNIPPET_TMP_DIR']: {'bind': '/mnt/snippets', 'mode':'ro'}},
+                            volumes={SNIPPET_TMP_DIR: {'bind': '/mnt/snippets', 'mode':'ro'}},
                             network_disabled=False)
     m.start()
     s = m.wait()['StatusCode']
@@ -90,7 +96,7 @@ def dkr_run(img, cmd, commit=None, timeout=1000, c=None):
 def github_dkr_img(user, repo, suffix):
     if suffix != "":
         suffix = "/"+suffix
-    return ('%s/github.com/%s/%s%s' % (app.config['DKR_IMAGE_PREFIX'], user, repo, suffix)).lower()
+    return ('%s/github.com/%s/%s%s' % (DKR_IMAGE_PREFIX, user, repo, suffix)).lower()
 
 def github_check_url(user, repo):
     return 'https://github.com/%s/%s' % (user, repo)
@@ -235,7 +241,7 @@ def gist_load(user, repo, id):
 
 def snippet_cache(txt):
     key = hashlib.md5(txt.encode('utf-8')).hexdigest()
-    fn = os.path.join(app.config['SNIPPET_TMP_DIR'], key)
+    fn = os.path.join(SNIPPET_TMP_DIR, key)
     if not os.path.isfile(fn):
         with open(fn, 'w') as f:
             f.write(txt)
@@ -254,7 +260,7 @@ def handle_page_not_found(e):
     return render_template('error_404.html', status=e), 404
 
 if __name__ == "__main__":
-    if app.config['DEBUG']:
+    if DEBUG:
         app.run(debug=True)
     else:
         app.run(host='0.0.0.0', threaded=True)
