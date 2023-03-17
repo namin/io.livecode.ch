@@ -205,7 +205,7 @@ def gist_save(user, repo):
     # Github API does not support empty content
     # so we collect them separately...
     es = []
-    for k,v in request.form.iteritems():
+    for k,v in request.form.items():
         if v.strip()=="":
           es.append(k)
         else:
@@ -229,7 +229,7 @@ def gist_load(user, repo, id):
     result = r.json()
     fs = result.get('files', {})
     data = {}
-    for k,v in fs.iteritems():
+    for k,v in fs.items():
         if k=='empty.txt':
             ev = v['content']
             es = ev.split(',')
