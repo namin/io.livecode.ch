@@ -55,6 +55,8 @@ Production server-side installation steps
 
 These steps have been tested on a [DigitalOcean](https://www.digitalocean.com/?refcode=10856c6c1ff2) (referral link) docker application droplet, and work regardless of the actual (sub)domain name of your server (i.e. no need to change occurrences of `io.livecode.ch` in config files).
 
+For the latest steps, follow [this article](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-22-04).
+
 * [Create a new droplet in the DigitalOcean UI](https://cloud.digitalocean.com/droplets/new):
   * for the image, select the default Ubuntu image
   * for the other options, select as you please. My options:
