@@ -8,12 +8,16 @@ from jinja2.exceptions import TemplateSyntaxError
 
 import os
 
+import cfg
+DEBUG = False
+SERVER_NAME = 'io.livecode.ch'
+DKR_BASE_IMAGE = 'namin/io.livecode.ch'
+DKR_IMAGE_PREFIX = 'temp/io.livecode.ch'
+SNIPPET_TMP_DIR = '/tmp/snippets'
+
 app = Flask(__name__)
-app.config.from_envvar('APP_SETTINGS')
-if 'DOCKER_HOST' not in app.config:
-    app.config['DOCKER_HOST'] = os.environ.get('DOCKER_HOST', 'unix://var/run/docker.sock')
-if not os.path.exists(app.config['SNIPPET_TMP_DIR']):
-    os.makedirs(app.config['SNIPPET_TMP_DIR'])
+if not os.path.exists(SNIPPET_TMP_DIR):
+    os.makedirs(SNIPPET_TMP_DIR)
 github_bot_token = os.environ.get('GITHUB_BOT_TOKEN', None)
 github_headers = {'Authorization':'token ' + github_bot_token, 'Accept': 'application/vnd.github.v3+json'}
 
@@ -30,45 +34,51 @@ import base64
 import json
 
 def dkr_base_img():
-    return app.config['DKR_BASE_IMAGE']
+    return DKR_BASE_IMAGE
 
 def dkr_client():
-    return docker.Client(base_url=app.config['DOCKER_HOST'],
-                         version='1.13',
-                         timeout=10)
+    return docker.from_env()
+
+def dkr_already_installed(img, c=None):
+    c = c or dkr_client()
+    try:
+        c.images.get(img)
+    except docker.errors.ImageNotFound:
+        return False
+    return True
 
 def dkr_check_img(img, git_url, refresh=False, suffix="", user=None, repo=None):
     c = dkr_client()
     if refresh:
         redis.delete(img)
-    if not refresh and c.images(img) != []:
+    if not refresh and dkr_already_installed(img, c):
         return {'status':0, 'out':'already installed'}
     if suffix != "":
         suffix = "-"+suffix
     base_image = dkr_base_img()+suffix
-    if c.images(base_image) == []:
+    try:
+        c.images.get(base_image)
+    except docker.errors.ImageNotFound:
         return {'status':1, 'out':'base image %s does not exists' % base_image}
-    m = c.create_container(base_image, 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
-    id = m['Id']
-    c.start(id)
-    s = c.wait(id)
+    m = c.containers.create(base_image, 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
+    m.start()
+    s = m.wait()['StatusCode']
     if s!=0:
         return {'status':s, 'out':'error cloning repository %s' % git_url}
-    c.commit(id, img)
-    return dkr_run(img, 'livecode-install', img, c=c)
+    m.commit(img)
+    return dkr_run(img, 'livecode-install', img, c=c, timeout=10000)
 
 def dkr_run(img, cmd, commit=None, timeout=10, c=None):
     c = c or dkr_client()
     r = ""
-    m = c.create_container(img,
-                           "timeout %d %s" % (timeout, cmd),
-                           user='runner',
-                           environment={'HOME':'/home/runner'},
-                           volumes=['/mnt/snippets'],
-                           network_disabled=False)
-    id = m['Id']
-    c.start(id, binds={app.config['SNIPPET_TMP_DIR']: { 'bind': '/mnt/snippets', 'ro': True }})
-    s = c.wait(id)
+    m = c.containers.create(img,
+                            "timeout %d %s" % (timeout, cmd),
+                            user='runner',
+                            environment={'HOME':'/home/runner'},
+                            volumes={SNIPPET_TMP_DIR: {'bind': '/mnt/snippets', 'mode':'ro'}},
+                            network_disabled=False)
+    m.start()
+    s = m.wait()['StatusCode']
     if s!=0:
         r += "error: (%d)\n" % s
     if s==137:
@@ -78,15 +88,15 @@ def dkr_run(img, cmd, commit=None, timeout=10, c=None):
     elif s==124:
         r += "inifinite loop!"
     else:
-        r += c.logs(id)
+        r += m.logs().decode('utf-8')
     if commit:
-        c.commit(id, repository=commit)
+        m.commit(repository=commit)
     return {'status':s, 'out':r}
 
 def github_dkr_img(user, repo, suffix):
     if suffix != "":
         suffix = "/"+suffix
-    return ('%s/github.com/%s/%s%s' % (app.config['DKR_IMAGE_PREFIX'], user, repo, suffix)).lower()
+    return ('%s/github.com/%s/%s%s' % (DKR_IMAGE_PREFIX, user, repo, suffix)).lower()
 
 def github_check_url(user, repo):
     return 'https://github.com/%s/%s' % (user, repo)
@@ -183,7 +193,7 @@ def github_run(user, repo):
         return cache
     o_run = dkr_run(img, 'livecode-run %s %s %s' % (key_main, key_pre, key_post))
     out = o_run['out']
-    if o_run['status']!=137:
+    if o_run['status']!=137 and o_run['status']!=1:
         j_defaults = fetch_defaults(user, repo)
         if j_defaults.get('cache', 'yes')!='no':
             redis.hset(img, '%s/%s/%s' % (key_main, key_pre, key_post), out)
@@ -195,7 +205,7 @@ def gist_save(user, repo):
     # Github API does not support empty content
     # so we collect them separately...
     es = []
-    for k,v in request.form.iteritems():
+    for k,v in request.form.items():
         if v.strip()=="":
           es.append(k)
         else:
@@ -219,7 +229,7 @@ def gist_load(user, repo, id):
     result = r.json()
     fs = result.get('files', {})
     data = {}
-    for k,v in fs.iteritems():
+    for k,v in fs.items():
         if k=='empty.txt':
             ev = v['content']
             es = ev.split(',')
@@ -231,7 +241,7 @@ def gist_load(user, repo, id):
 
 def snippet_cache(txt):
     key = hashlib.md5(txt.encode('utf-8')).hexdigest()
-    fn = os.path.join(app.config['SNIPPET_TMP_DIR'], key)
+    fn = os.path.join(SNIPPET_TMP_DIR, key)
     if not os.path.isfile(fn):
         with open(fn, 'w') as f:
             f.write(txt)
@@ -250,7 +260,7 @@ def handle_page_not_found(e):
     return render_template('error_404.html', status=e), 404
 
 if __name__ == "__main__":
-    if app.config['DEBUG']:
+    if DEBUG:
         app.run(debug=True)
     else:
         app.run(host='0.0.0.0', threaded=True)
