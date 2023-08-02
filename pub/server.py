@@ -11,7 +11,7 @@ import os
 import cfg
 DEBUG = False
 SERVER_NAME = 'io.livecode.ch'
-DKR_BASE_IMAGE = 'namin/io.livecode.ch'
+DKR_BASE_IMAGE = 'namin/io4.livecode.ch'
 DKR_IMAGE_PREFIX = 'temp/io.livecode.ch'
 SNIPPET_TMP_DIR = '/tmp/snippets'
 
