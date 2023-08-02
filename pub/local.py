@@ -10,16 +10,22 @@ app = Flask(__name__)
 
 def proxy_github_post(action, user, repo):
     data = {}
-    for k,v in request.form.iteritems():
+    for k,v in request.values.iteritems():
         data[k] = v
-    r = requests.post('http://%s/api/%s/%s/%s' % (os.environ.get('REMOTE_SERVER_NAME', 'io.livecode.ch'), action, user, repo), data)
+    r = requests.post('https://%s/api/%s/%s/%s' % (os.environ.get('REMOTE_SERVER_NAME', 'io.livecode.ch'), action, user, repo), data)
     return r.text, r.status_code
 
-@app.route("/api/run/<user>/<repo>", methods=['POST'])
+@app.route("/api/run", methods=['GET','POST'])
+def proxy_github_run0():
+    user = request.values['user']
+    repo = request.values['repo']
+    return proxy_github_post('run', user, repo)
+
+@app.route("/api/run/<user>/<repo>", methods=['GET','POST'])
 def proxy_github_run(user, repo):
     return proxy_github_post('run', user, repo)
 
-@app.route("/api/save/<user>/<repo>", methods=['POST'])
+@app.route("/api/save/<user>/<repo>", methods=['GET','POST'])
 def proxy_github_save(user, repo):
     return proxy_github_post('save', user, repo)
 

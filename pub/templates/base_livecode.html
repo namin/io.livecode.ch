@@ -9,7 +9,9 @@
 <script src="/static/lib/CodeMirror/mode/clike/clike.js"></script>
 <script src=/static/lib/CodeMirror/mode/shell/shell.js></script>
 {% else %}
+{% if language != 'null' %}
 <script src="/static/lib/CodeMirror/mode/{{ language }}/{{ language }}.js"></script>
+{% endif %}
 {% endif %}
 {% endif %}
 <style type="text/css">
@@ -31,11 +33,12 @@
 </div>
 {% endblock %}
 
-<a href="https://github.com/{{user}}/{{repo}}"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+<a href="https://github.com/{{user}}/{{repo}}"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
 {% endblock %}
 
 {% block body_extra %}
 <script>
+var editors = {};
 $(function() {
   function create_editor(id, mode) {
     {% if language %}
@@ -46,15 +49,16 @@ $(function() {
     return CodeMirror.fromTextArea(document.getElementById(id), {
       mode: mode,
       tabMode: 'indent',
-      lineNumbers: true
+      lineNumbers: true,
+      extraKeys: {Tab: false, "Shift-Tab": false}
     });
   }
 
-  var editors = {}
   $('.live').each(function(index) {
     var id = $(this).attr('id');
     var libs = $(this).attr('data-lib');
     var mode = $(this).attr('data-mode');
+    var editor_id = 'editor-'+id;
     var code_id = 'code-'+id;
     var check_id = 'check-'+id;
     var output_id = 'output-'+id;
@@ -64,7 +68,7 @@ $(function() {
       extra = livecode_html_extra(id);
     }
     $(this).text("");
-    $(this).html("<textarea name="+code_id+" id="+code_id+">"+code+"</textarea><div><i id="+check_id+" class=\"fa fa-play-circle-o icon\"></i> <pre class=output id="+output_id+"></pre>"+extra+"</div>");
+    $(this).html("<div id="+editor_id+"><textarea name="+code_id+" id="+code_id+">"+code+"</textarea></div><div><i id="+check_id+" class=\"fa fa-play-circle-o icon\"></i> <pre class=output id="+output_id+"></pre>"+extra+"</div>");
     editors[id] = create_editor(code_id, mode);
     $('#'+check_id).click(function () {
       $('#'+check_id).addClass('running');
@@ -72,11 +76,12 @@ $(function() {
         return editors[lib_id].getValue();
       }).join('\n') : '';
       var app_txt = editors[id].getValue();
-      $.post('/api/run/{{ user }}/{{ repo }}', {'pre':lib_txt, 'main':app_txt, 'post':''}, function (data) {
+      $.post('/api/run/{{ user }}/{{ repo }}'+window.location.search, {'pre':lib_txt, 'main':app_txt, 'post':''}, function (data) {
         if (typeof livecode_process_data != "undefined") {
           data = livecode_process_data(id, data);
         }
         $('#'+output_id).text(data);
+        $('#'+output_id).trigger('contentchanged');
         $('#'+check_id).removeClass('running');
       });
     })
@@ -105,7 +110,7 @@ $(function() {
       $.each(editors, function (k,v) {
         fs[k] = editors[k].getValue();
       });
-      $.post('/api/save/{{ user }}/{{ repo }}', fs, function(data) {
+      $.post('/api/save/{{ user }}/{{ repo }}'+window.location.search, fs, function(data) {
         window.location.hash = data;
       })
     })
