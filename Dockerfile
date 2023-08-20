@@ -90,6 +90,7 @@ RUN  cd /code;\
      cp twelf-server /usr/local/bin
 
 ### SCMUTILS ###
+RUN apt-get install -y libtinfo5
 RUN cd /code;\
     mkdir scmutils;\
     cd scmutils;\
