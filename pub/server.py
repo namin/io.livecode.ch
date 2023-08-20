@@ -66,9 +66,9 @@ def dkr_check_img(img, git_url, refresh=False, suffix="", user=None, repo=None):
     if s!=0:
         return {'status':s, 'out':'error cloning repository %s' % git_url}
     m.commit(img)
-    return dkr_run(img, 'livecode-install', img, c=c, timeout=10000)
+    return dkr_run(img, 'livecode-install', img, c=c, timeout=100000)
 
-def dkr_run(img, cmd, commit=None, timeout=10, c=None):
+def dkr_run(img, cmd, commit=None, timeout=500, c=None):
     c = c or dkr_client()
     r = ""
     m = c.containers.create(img,
