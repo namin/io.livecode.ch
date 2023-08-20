@@ -1,0 +1,13 @@
+[Unit]
+Description=Gunicorn instance to serve io.livecode.ch
+After=network.target
+
+[Service]
+User=namin
+Group=www-data
+WorkingDirectory=/home/namin/io.livecode.ch/pub
+Environment="PATH=/home/namin/io.livecode.ch/ioenv/bin"
+ExecStart=/home/namin/io.livecode.ch/ioenv/bin/gunicorn --workers 3 --bind unix:iolive.sock --timeout 600 -m 007 wsgi:app
+
+[Install]
+WantedBy=multi-user.target
