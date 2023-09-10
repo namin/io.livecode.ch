@@ -181,7 +181,7 @@ def github_run(user, repo):
     img = github_dkr_img(user, repo, suffix)
     o = dkr_check_img(img, github_git_url(user, repo), suffix=suffix, user=user, repo=repo)
     if o['status']!=0:
-        return 'installation error\n%s' % o.out, 500
+        return 'installation error\n%s' % o['out'], 500
     input_main = request.form['main']
     input_pre = request.form['pre']
     input_post = request.form['post']
