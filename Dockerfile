@@ -91,13 +91,20 @@ RUN  cd /code;\
 
 ### SCMUTILS ###
 RUN apt-get install -y libtinfo5
+RUN cd /code; wget -nv https://ftp.gnu.org/gnu/mit-scheme/stable.pkg/12.1/mit-scheme-12.1-x86-64.tar.gz
+RUN cd /code; tar xzf mit-scheme-12.1-x86-64.tar.gz
+RUN ls /code
+RUN cd /code/mit-scheme-12.1/src; ./configure
+RUN cd /code/mit-scheme-12.1/src; make
+RUN cd /code/mit-scheme-12.1/src; make install
+
 RUN cd /code;\
-    mkdir scmutils;\
-    cd scmutils;\
-    wget -nv http://groups.csail.mit.edu/mac/users/gjs/6946/scmutils-tarballs/scmutils-20160827-x86-64-gnu-linux.tar.gz;\
-    cd /usr/local;\
-    tar -xvf /code/scmutils/scmutils-20160827-x86-64-gnu-linux.tar.gz
-ADD dkr/software/mechanics-shell /usr/local/bin/mechanics-shell
+    wget -nv https://groups.csail.mit.edu/mac/users/gjs/6946/mechanics-system-installation/native-code/scmutils-20230902.tar.gz;\
+    tar xzf scmutils-20230902.tar.gz;\
+    cd scmutils-20230902;\
+    ./install.sh;\
+    cp mechanics.sh /usr/local/bin/mechanics-shell
+#ADD dkr/software/mechanics-shell /usr/local/bin/mechanics-shell
 
 ## Java ##
 #RUN apt-get install -y openjdk-6-jdk
@@ -174,6 +181,10 @@ RUN curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E4
 RUN chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
 RUN apt-get update
 RUN apt-get install -y sbt
+
+## Python ##
+RUN apt-get update
+RUN apt-get install -y python3-pip python3-dev build-essential libssl-dev libffi-dev python3-setuptools python3-venv
 
 ## user runner ##
 
