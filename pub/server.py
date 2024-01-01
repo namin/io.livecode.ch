@@ -47,7 +47,8 @@ def dkr_already_installed(img, c=None):
         return False
     return True
 
-def dkr_check_img(img, git_url, refresh=False, suffix="", user=None, repo=None):
+def dkr_check_img(img, git_url, refresh=False, suffix="", user=None, repo=None, clone_recursive=None):
+    recursive = "--recursive" if clone_recursive is None or clone_recursive  else ""
     c = dkr_client()
     if refresh:
         redis.delete(img)
@@ -60,7 +61,7 @@ def dkr_check_img(img, git_url, refresh=False, suffix="", user=None, repo=None):
         c.images.get(base_image)
     except docker.errors.ImageNotFound:
         return {'status':1, 'out':'base image %s does not exists' % base_image}
-    m = c.containers.create(base_image, 'git clone --recursive "%s" /home/runner/code' % git_url, user='runner')
+    m = c.containers.create(base_image, 'git clone %s "%s" /home/runner/code' % (recursive, git_url), user='runner')
     m.start()
     s = m.wait()['StatusCode']
     if s!=0:
@@ -147,7 +148,7 @@ def fetch_defaults(user, repo):
     except ValueError as e:
         raise UserError(user, repo, ctx='while parsing <code>defaults.json</code>', err=str(e))
     suffix = request.args.get('img', "")
-    o = dkr_check_img(github_dkr_img(user, repo, suffix), github_git_url(user, repo), refresh=request.args.get('refresh', False), suffix=suffix)
+    o = dkr_check_img(github_dkr_img(user, repo, suffix), github_git_url(user, repo), refresh=request.args.get('refresh', False), suffix=suffix, clone_recursive=j_defaults.get('clone_recursive', True))
     if o['status']!=0:
         raise UserError(user, repo, ctx='while installing', err=o['out'])
     return j_defaults
