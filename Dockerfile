@@ -186,6 +186,11 @@ RUN apt-get install -y sbt
 RUN apt-get update
 RUN apt-get install -y python3-pip python3-dev build-essential libssl-dev libffi-dev python3-setuptools python3-venv
 
+
+## Tweaks ##
+# remove local scheme (MIT Scheme) because it's available as mit-scheme and overtakes chez scheme
+RUN rm /usr/local/bin/scheme
+
 ## user runner ##
 
 RUN apt-get install -y sudo
